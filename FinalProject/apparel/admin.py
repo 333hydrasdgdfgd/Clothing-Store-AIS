@@ -1,0 +1,15 @@
+from django.contrib import admin
+from .models import Category, Brand, Size, Color, Material, Product, Supplier, Customer, Employee, PurchaseOrder, PurchaseOrderDetails, SalesOrder, SalesOrderDetails
+admin.site.register(Category)
+admin.site.register(Brand)
+admin.site.register(Size)
+admin.site.register(Color)
+admin.site.register(Material)
+admin.site.register(Product)
+admin.site.register(Supplier)
+admin.site.register(Customer)
+admin.site.register(Employee)
+admin.site.register(PurchaseOrder)
+admin.site.register(PurchaseOrderDetails)
+admin.site.register(SalesOrder)
+admin.site.register(SalesOrderDetails)

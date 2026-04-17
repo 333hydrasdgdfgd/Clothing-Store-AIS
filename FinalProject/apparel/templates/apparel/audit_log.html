@@ -1,0 +1,143 @@
+{% load tz %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Audit Log — Aura OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body{ display:flex; background:#f5f3ef; font-family:'Inter',sans-serif; color:#333; min-height:100vh; }
+
+/* SIDEBAR */
+.sidebar{ width:220px; min-width:220px; background:#1a1a1a; color:white; display:flex; flex-direction:column; justify-content:space-between; padding:0; position:fixed; top:0; left:0; height:100vh; z-index:100; }
+.sidebar-top{ display:flex; flex-direction:column; overflow-y:auto; }
+.logo{ font-family:'Playfair Display',serif; font-size:20px; font-weight:700; letter-spacing:2px; padding:28px 24px 24px; border-bottom:1px solid #2a2a2a; }
+.menu{ list-style:none; padding:12px 0; }
+.menu li a{ display:block; padding:11px 24px; text-decoration:none; color:#ccc; font-size:14px; font-weight:500; transition:0.2s; }
+.menu li a:hover{ background:#2a2a2a; color:white; }
+.menu li a.active{ background:#2a2a2a; color:white; }
+.sidebar-bottom{ padding:20px 24px; border-top:1px solid #2a2a2a; }
+.sidebar-bottom .emp-name{ font-weight:600; font-size:14px; margin-bottom:3px; }
+.sidebar-bottom .emp-role{ font-size:12px; color:#888; margin-bottom:12px; }
+.logout-btn{ display:inline-flex; align-items:center; gap:6px; padding:8px 14px; background:#2a2a2a; color:#ccc; border-radius:6px; text-decoration:none; font-size:13px; transition:0.2s; }
+.logout-btn:hover{ background:#333; color:white; }
+
+/* MAIN */
+.main{ margin-left:220px; flex:1; display:flex; flex-direction:column; min-height:100vh; }
+.header{ background:white; border-bottom:1px solid #e8e4dc; padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+.header h2{ font-size:18px; font-weight:500; color:#333; }
+.header-right{ font-size:14px; color:#888; }
+
+.content{ padding:32px; }
+
+/* TABLE CARD */
+.table-card{ background:white; border-radius:12px; border:1px solid #e8e4dc; overflow:hidden; }
+.table-card-header{ padding:18px 24px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0ede8; }
+.table-card-header h3{ font-size:15px; font-weight:600; }
+.table-card-header .badge{ padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; background:#f5f3ef; color:#666; }
+
+table{ width:100%; border-collapse:collapse; }
+th{ padding:10px 20px; text-align:left; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:#aaa; border-bottom:1px solid #f0ede8; background:#faf9f7; }
+td{ padding:14px 20px; font-size:13px; border-bottom:1px solid #f5f3ef; }
+tr:last-child td{ border-bottom:none; }
+tr:hover td{ background:#faf9f7; }
+.empty-row td{ text-align:center; color:#bbb; padding:24px; font-style:italic; }
+
+.badge{ padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; display:inline-block; }
+.badge-create{ background:#d1fae5; color:#065f46; }
+.badge-update{ background:#fef3c7; color:#92400e; }
+.badge-delete{ background:#fee2e2; color:#991b1b; }
+.badge-login{ background:#dbeafe; color:#1e40af; }
+.badge-logout{ background:#f3f4f6; color:#374151; }
+
+.timestamp{ color:#888; font-size:12px; }
+.user{ font-weight:600; }
+.details{ color:#666; }
+
+.back-link{ display:inline-flex; align-items:center; gap:6px; padding:10px 16px; background:white; border:1px solid #e8e4dc; border-radius:8px; text-decoration:none; color:#555; font-size:14px; margin-bottom:20px; transition:0.2s; }
+.back-link:hover{ background:#f9f9f9; border-color:#ddd; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-top">
+    <div class="logo">AURA OS</div>
+    <ul class="menu">
+      <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+      <li><a href="{% url 'product_list' %}">Products</a></li>
+      <li><a href="{% url 'transactions' %}">Inventory</a></li>
+      <li><a href="{% url 'supplier_list' %}">Suppliers</a></li>
+      <li><a href="{% url 'purchase_orders' %}">Purchase Orders</a></li>
+      <li><a href="{% url 'sales_orders' %}">Sales Orders</a></li>
+      <li><a href="{% url 'customer_list' %}">Customers</a></li>
+      <li><a href="{% url 'employee_list' %}">Employees</a></li>
+      <li><a href="{% url 'shipping_list' %}">Shipping Details</a></li>
+      <li><a href="{% url 'accounting' %}">Accounting</a></li>
+      <li><a href="{% url 'audit_log' %}" class="active">Audit Log</a></li>
+    </ul>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="emp-name">{{ employee_name }}</div>
+    <div class="emp-role">
+      {% if employee_role == 'Admin' %}Sales Manager
+      {% elif employee_role == 'Purchasing' %}Purchasing Staff
+      {% elif employee_role == 'Inventory' %}Inventory Clerk
+      {% elif employee_role == 'Sales' %}Sales / Cashier
+      {% elif employee_role == 'Accounting' %}Accounting
+      {% endif %}
+    </div>
+    <a href="{% url 'logout' %}" class="logout-btn">🚪 Logout</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="header">
+    <h2>Audit Log</h2>
+    <div class="header-right"><button onclick="window.location.reload(true)" style="background:#f5f3ef;border:1px solid #e8e4dc;padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer;color:#555;">↻ Refresh</button> &nbsp; System Activity Tracker</div>
+  </div>
+
+  <div class="content">
+    <a href="{% url 'dashboard' %}" class="back-link">← Back to Dashboard</a>
+
+    <div class="table-card">
+      <div class="table-card-header">
+        <h3>System Activity Log</h3>
+        <span class="badge">{{ logs|length }} Records</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td class="timestamp">{{ log.datetime|localtime|date:"M d, Y g:i A" }}</td>
+            <td class="user">{{ log.employee_name }}</td>
+            <td>
+              <span class="badge badge-{{ log.action|lower }}">{{ log.action }}</span>
+            </td>
+            <td class="details">{{ log.description }}</td>
+          </tr>
+          {% empty %}
+          <tr class="empty-row">
+            <td colspan="4">No audit logs recorded yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

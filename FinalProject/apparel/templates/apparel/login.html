@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aura Apparel – Employee Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:'Inter',sans-serif; background:#f5f3ef; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+.login-card{ background:white; padding:45px 40px; border-radius:16px; border:1px solid #e8e4dc; width:100%; max-width:420px; }
+.logo{ font-family:'Playfair Display',serif; font-size:30px; text-align:center; margin-bottom:6px; color:#111; }
+.tagline{ text-align:center; color:#888; font-size:14px; margin-bottom:32px; }
+label{ font-size:14px; font-weight:500; display:block; margin-bottom:6px; color:#333; }
+input{ width:100%; padding:12px 14px; border-radius:8px; border:1px solid #ddd; font-size:14px; margin-bottom:18px; transition:0.2s; }
+input:focus{ outline:none; border-color:#111; box-shadow:0 0 0 2px rgba(0,0,0,0.06); }
+input:disabled{ background:#f5f5f5; cursor:not-allowed; }
+.error{ background:#fee2e2; color:#b91c1c; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px; }
+.lockout-box{ background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; padding:14px 16px; border-radius:8px; font-size:13px; margin-bottom:16px; text-align:center; }
+.lockout-box .countdown{ font-size:28px; font-weight:700; font-family:'Playfair Display',serif; display:block; margin:6px 0 4px; color:#c2410c; }
+.lockout-box .lock-msg{ font-size:12px; color:#b45309; }
+.btn{ width:100%; padding:13px; background:#111; color:white; border:none; border-radius:8px; font-size:15px; font-weight:500; cursor:pointer; transition:0.2s; }
+.btn:hover{ background:#333; }
+.btn:disabled{ background:#aaa; cursor:not-allowed; }
+.back-home{ display:block; text-align:center; margin-top:16px; font-size:13px; color:#888; text-decoration:none; transition:0.2s; }
+.back-home:hover{ color:#111; }
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="logo">AURA OS</div>
+  <p class="tagline">Aura Apparel Operations System</p>
+
+  {% if error %}
+    {% if "wait 30 seconds" in error %}
+    <div class="lockout-box">
+      🔒 Account temporarily locked
+      <span class="countdown" id="countdown-display">30</span>
+      <span class="lock-msg">seconds remaining before you can try again</span>
+    </div>
+    <script>
+      (function(){
+        var seconds = 30;
+        var display = document.getElementById('countdown-display');
+        var btn = document.getElementById('login-btn');
+        var inputs = document.querySelectorAll('input');
+        btn.disabled = true;
+        inputs.forEach(function(i){ i.disabled = true; });
+        var timer = setInterval(function(){
+          seconds--;
+          display.textContent = seconds;
+          if(seconds <= 0){
+            clearInterval(timer);
+            display.textContent = '0';
+            btn.disabled = false;
+            inputs.forEach(function(i){ i.disabled = false; });
+            document.querySelector('.lockout-box').style.display = 'none';
+          }
+        }, 1000);
+      })();
+    </script>
+    {% else %}
+    <div class="error">⚠ {{ error }}</div>
+    {% endif %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <label>Username</label>
+    <input type="text" name="username" placeholder="Enter your username" required autofocus>
+
+    <label>Password</label>
+    <input type="password" name="password" placeholder="Enter your password" required>
+
+    <button type="submit" class="btn" id="login-btn">Login →</button>
+  </form>
+
+  <a href="{% url 'coverpage' %}" class="back-home">← Back to Homepage</a>
+</div>
+
+</body>
+</html>

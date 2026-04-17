@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add Supplier</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:'Inter',sans-serif; background:#f5f3ef; padding:40px; color:#333; }
+.container{ max-width:700px; margin:auto; }
+.back{ text-decoration:none; color:#666; font-size:14px; display:inline-flex; align-items:center; gap:5px; margin-bottom:20px; }
+.back:hover{ color:#111; }
+.page-title{ font-family:'Playfair Display',serif; font-size:36px; margin-bottom:5px; }
+.subtitle{ color:#888; margin-bottom:30px; font-size:14px; }
+.card{ background:white; padding:30px; border-radius:14px; border:1px solid #e8e4dc; margin-bottom:20px; }
+.section-title{ font-weight:600; margin-bottom:20px; font-size:16px; }
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; column-gap:24px; row-gap:20px; }
+.full{ grid-column:1/-1; }
+label{ font-size:13px; font-weight:500; display:block; margin-bottom:6px; color:#555; }
+input{ width:100%; padding:11px 12px; border-radius:8px; border:1px solid #ddd; font-size:14px; transition:0.2s; background:white; }
+input:focus{ outline:none; border-color:#111; box-shadow:0 0 0 2px rgba(0,0,0,0.05); }
+.actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:24px; }
+.cancel{ padding:10px 18px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; text-decoration:none; color:#333; display:inline-flex; align-items:center; }
+.save{ padding:10px 22px; border:none; border-radius:8px; background:#111; color:white; cursor:pointer; font-size:14px; font-weight:500; }
+.save:hover{ background:#333; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="{% url 'supplier_list' %}" class="back">← Back to Supplier List</a>
+  <h1 class="page-title">Add Supplier</h1>
+  <p class="subtitle">Enter the details of the new supplier.</p>
+  <form method="post">
+  {% csrf_token %}
+  <div class="card">
+    <div class="section-title">Supplier Information</div>
+    <div class="form-grid">
+      <div class="full"><label>Supplier Name</label><input type="text" name="supplier_name" value="{{ supplier.supplier_name|default:'' }}" placeholder="e.g. Global Fabrics Co." required></div>
+      <div class="full"><label>Contact Person</label><input type="text" name="contact_person" value="{{ supplier.contact_person|default:'' }}" placeholder="e.g. Juan Dela Cruz"></div>
+      <div><label>Phone</label><input type="text" name="phone" value="{{ supplier.phone|default:'' }}" placeholder="e.g. 0917-123-4567"></div>
+      <div><label>Email</label><input type="email" name="email" value="{{ supplier.email|default:'' }}" placeholder="e.g. supplier@email.com"></div>
+      <div class="full"><label>Address</label><input type="text" name="address" value="{{ supplier.address|default:'' }}" placeholder="e.g. 123 Main St, Manila"></div>
+    </div>
+    <div class="actions">
+      <a href="{% url 'supplier_list' %}" class="cancel">Cancel</a>
+      <button type="submit" class="save">💾 Save Supplier</button>
+    </div>
+  </div>
+  </form>
+</div>
+</body>
+</html>

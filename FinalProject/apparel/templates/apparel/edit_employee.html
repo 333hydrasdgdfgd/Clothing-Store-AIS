@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Edit Employee</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body{
+  font-family:'Inter',sans-serif;
+  background:#f5f3ef;
+  padding:40px;
+  color:#333;
+}
+
+.container{ max-width:900px; margin:auto; }
+
+.back{
+  text-decoration:none;
+  color:#666;
+  font-size:14px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  margin-bottom:20px;
+}
+.back:hover{ color:#111; }
+
+.page-title{
+  font-family:'Playfair Display',serif;
+  font-size:36px;
+  margin-bottom:5px;
+}
+
+.subtitle{
+  color:#888;
+  margin-bottom:30px;
+  font-size:14px;
+}
+
+.card{
+  background:white;
+  padding:30px;
+  border-radius:14px;
+  border:1px solid #e8e4dc;
+  margin-bottom:20px;
+}
+
+.section-title{
+  font-weight:600;
+  margin-bottom:20px;
+  font-size:16px;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  column-gap:24px;
+  row-gap:20px;
+}
+
+.full{ grid-column:1/-1; }
+
+label{
+  font-size:13px;
+  font-weight:500;
+  display:block;
+  margin-bottom:6px;
+  color:#555;
+}
+
+input,select{
+  width:100%;
+  padding:11px 12px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  font-size:14px;
+  transition:0.2s;
+  background:white;
+}
+
+input:focus,select:focus{
+  outline:none;
+  border-color:#111;
+  box-shadow:0 0 0 2px rgba(0,0,0,0.05);
+}
+
+.hint{
+  font-size:12px;
+  color:#aaa;
+  margin-top:4px;
+}
+
+/* ROLE BADGE */
+.role-badge{
+  display:inline-block;
+  padding:6px 14px;
+  border-radius:20px;
+  font-size:13px;
+  font-weight:500;
+  margin-top:10px;
+}
+
+/* Role Colors */
+.role-admin{
+  background:#f3d9a5;
+  color:#a15c00;
+}
+
+.role-purchasing{
+  background:#d9e6ff;
+  color:#1d4ed8;
+}
+
+.role-inventory{
+  background:#d4f4e2;
+  color:#047857;
+}
+
+.role-sales{
+  background:#e6dcff;
+  color:#6d28d9;
+}
+
+.role-accounting-manager{
+  background:#efd6e0;
+  color:#9d174d;
+}
+
+.role-staff-accountant{
+  background:#eee;
+  color:#444;
+}
+
+.actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:24px;
+}
+
+.cancel{
+  padding:10px 18px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  background:white;
+  cursor:pointer;
+  font-size:14px;
+  text-decoration:none;
+  color:#333;
+}
+
+.save{
+  padding:10px 22px;
+  border:none;
+  border-radius:8px;
+  background:#111;
+  color:white;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:500;
+}
+
+.save:hover{ background:#333; }
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <a href="{% url 'employee_list' %}" class="back">← Back to Employee List</a>
+
+  <h1 class="page-title">Edit Employee</h1>
+  <p class="subtitle">Update the employee's details, credentials, and role.</p>
+
+  <form method="post">
+  {% csrf_token %}
+
+  <div class="card">
+    <div class="section-title">🔐 Login Credentials & Role</div>
+
+    <div class="form-grid">
+
+      <div>
+        <label>Username</label>
+        <input type="text" name="username" value="{{ employee.username }}" required>
+        <p class="hint">Employee will use this to log in.</p>
+      </div>
+
+      <div>
+        <label>New Password</label>
+        <input type="password" name="password" placeholder="Leave blank to keep current password">
+        <p class="hint">Only fill this if you want to change the password.</p>
+      </div>
+
+      <div class="full">
+        <label>Role (determines page access)</label>
+
+        <select name="role" required id="roleSelect">
+          <option value="Admin" {% if employee.role == 'Admin' %}selected{% endif %}>Sales Manager — Full Access</option>
+          <option value="Purchasing" {% if employee.role == 'Purchasing' %}selected{% endif %}>Purchasing Staff</option>
+          <option value="Inventory" {% if employee.role == 'Inventory' %}selected{% endif %}>Inventory Clerk</option>
+          <option value="Sales" {% if employee.role == 'Sales' %}selected{% endif %}>Sales / Cashier</option>
+          <option value="Accounting Manager" {% if employee.role == 'Accounting Manager' %}selected{% endif %}>Accounting Manager</option>
+          <option value="Staff Accountant" {% if employee.role == 'Staff Accountant' %}selected{% endif %}>Staff Accountant</option>
+        </select>
+
+        <!-- ROLE PREVIEW BADGE -->
+        <div id="rolePreview" class="role-badge"></div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">👤 Employee Information</div>
+
+    <div class="form-grid">
+      <div class="full">
+        <label>Full Name</label>
+        <input type="text" name="full_name" value="{{ employee.full_name }}" required>
+      </div>
+
+      <div>
+        <label>Email</label>
+        <input type="email" name="email" value="{{ employee.email|default:'' }}">
+      </div>
+
+      <div>
+        <label>Phone</label>
+        <input type="text" name="phone" value="{{ employee.phone|default:'' }}">
+      </div>
+
+      <div class="full">
+        <label>Address</label>
+        <input type="text" name="address" value="{{ employee.address }}">
+      </div>
+
+      <div>
+        <label>Salary</label>
+        <input type="number" step="0.01" name="salary" value="{{ employee.salary }}">
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a href="{% url 'employee_list' %}" class="cancel">Cancel</a>
+    <button type="submit" class="save">💾 Update Employee</button>
+  </div>
+
+  </form>
+</div>
+
+<script>
+const roleSelect = document.getElementById("roleSelect");
+const preview = document.getElementById("rolePreview");
+
+function updateRoleBadge(){
+  const role = roleSelect.value;
+
+  preview.className = "role-badge";
+
+  if(role === "Admin"){
+    preview.classList.add("role-admin");
+    preview.textContent = "Sales Manager";
+  }
+  else if(role === "Purchasing"){
+    preview.classList.add("role-purchasing");
+    preview.textContent = "Purchasing Staff";
+  }
+  else if(role === "Inventory"){
+    preview.classList.add("role-inventory");
+    preview.textContent = "Inventory Clerk";
+  }
+  else if(role === "Sales"){
+    preview.classList.add("role-sales");
+    preview.textContent = "Sales / Cashier";
+  }
+  else if(role === "Accounting Manager"){
+    preview.classList.add("role-accounting-manager");
+    preview.textContent = "Accounting Manager";
+  }
+  else if(role === "Staff Accountant"){
+    preview.classList.add("role-staff-accountant");
+    preview.textContent = "Staff Accountant";
+  }
+}
+
+roleSelect.addEventListener("change", updateRoleBadge);
+window.onload = updateRoleBadge;
+</script>
+
+</body>
+</html>

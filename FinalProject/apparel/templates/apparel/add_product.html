@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add New Product</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:'Inter',sans-serif; background:#f5f3ef; padding:40px; color:#333; }
+.container{ max-width:900px; margin:auto; }
+.back{ text-decoration:none; color:#666; font-size:14px; display:inline-flex; align-items:center; gap:5px; margin-bottom:20px; }
+.back:hover{ color:#111; }
+.page-title{ font-family:'Playfair Display',serif; font-size:36px; margin-bottom:5px; }
+.subtitle{ color:#888; margin-bottom:30px; font-size:14px; }
+.card{ background:white; padding:30px; border-radius:14px; border:1px solid #e8e4dc; margin-bottom:20px; }
+.section-title{ font-weight:600; margin-bottom:20px; font-size:16px; }
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; column-gap:24px; row-gap:20px; }
+.full{ grid-column:1/-1; }
+label{ font-size:13px; font-weight:500; display:block; margin-bottom:6px; color:#555; }
+input,select{ width:100%; padding:11px 12px; border-radius:8px; border:1px solid #ddd; font-size:14px; transition:0.2s; background:white; }
+input:focus,select:focus{ outline:none; border-color:#111; box-shadow:0 0 0 2px rgba(0,0,0,0.05); }
+input[readonly]{ background:#f7f7f7; color:#555; }
+.price-wrap{ position:relative; }
+.price-wrap .sym{ position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#888; font-size:14px; pointer-events:none; }
+.price-wrap input{ padding-left:22px; }
+.hint{ font-size:12px; color:#aaa; margin-top:5px; }
+
+/* Checkbox group */
+.checkbox-group{ display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+.checkbox-item{ display:flex; align-items:center; gap:6px; background:#f5f3ef; border:1px solid #e8e4dc; border-radius:8px; padding:7px 12px; cursor:pointer; transition:0.2s; user-select:none; }
+.checkbox-item:hover{ border-color:#aaa; background:#ede9e3; }
+.checkbox-item input[type="checkbox"]{ width:15px; height:15px; cursor:pointer; accent-color:#111; margin:0; padding:0; }
+.checkbox-item span{ font-size:13px; color:#444; }
+.checkbox-item.checked{ background:#1a1a1a; border-color:#1a1a1a; }
+.checkbox-item.checked span{ color:white; }
+
+.actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:24px; }
+.cancel{ padding:10px 18px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; text-decoration:none; color:#333; display:inline-flex; align-items:center; }
+.save{ padding:10px 22px; border:none; border-radius:8px; background:#111; color:white; cursor:pointer; font-size:14px; font-weight:500; }
+.save:hover{ background:#333; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="{% url 'product_list' %}" class="back">← Back to Product List</a>
+  <h1 class="page-title">Add New Product</h1>
+  <p class="subtitle">Enter the details of the new apparel item.</p>
+
+  <form method="post">
+  {% csrf_token %}
+
+  <div class="card">
+    <div class="section-title">Basic Information</div>
+    <div class="form-grid">
+      <div>
+        <label>Product Code</label>
+        <input type="text" name="product_code" placeholder="e.g. TSH-001" required>
+      </div>
+      <div>
+        <label>Product Name</label>
+        <input type="text" name="product_name" placeholder="e.g. Classic White Tee" required>
+      </div>
+      <div>
+        <label>Category</label>
+        <select name="category" id="category-select" required>
+          <option value="">Select Category</option>
+          {% for c in categories %}
+          <option value="{{ c.id }}">{{ c.category_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>Brand</label>
+        <select name="brand" id="brand-select" required>
+          <option value="">Select Brand</option>
+        </select>
+      </div>
+      <div class="full">
+        <label>Material</label>
+        <select name="material" id="material-select" required>
+          <option value="">Select Material</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Sizes <span style="font-size:12px;color:#aaa;font-weight:400;">— select all that apply</span></div>
+    <div class="checkbox-group" id="sizes-group">
+      <span style="font-size:13px;color:#aaa;font-style:italic;">Select a category first</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Colors <span style="font-size:12px;color:#aaa;font-weight:400;">— select all that apply</span></div>
+    <div class="checkbox-group" id="colors-group">
+      <span style="font-size:13px;color:#aaa;font-style:italic;">Select a category first</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Pricing</div>
+    <div class="form-grid">
+      <div class="price-wrap">
+        <label>Unit Cost</label>
+        <span class="sym">₱</span>
+        <input type="number" step="0.01" name="unit_cost" id="unit-cost" placeholder="0.00" required oninput="calcSellingPrice()">
+      </div>
+      <div class="price-wrap">
+        <label>Selling Price <span style="font-size:11px;color:#aaa;font-weight:400;">(auto: cost + 5%)</span></label>
+        <span class="sym">₱</span>
+        <input type="number" step="0.01" name="selling_price" id="selling-price" placeholder="0.00" required readonly>
+        <p class="hint">Auto-calculated as unit cost × 1.05. You can edit if needed.</p>
+      </div>
+    </div>
+    <div class="actions">
+      <a href="{% url 'product_list' %}" class="cancel">Cancel</a>
+      <button type="submit" class="save">💾 Save Product</button>
+    </div>
+  </div>
+
+  </form>
+</div>
+
+<script>
+function calcSellingPrice() {
+  var cost = parseFloat(document.getElementById('unit-cost').value);
+  var sp = document.getElementById('selling-price');
+  if (!isNaN(cost) && cost > 0) {
+    sp.value = (cost * 1.05).toFixed(2);
+    sp.readOnly = false;
+  } else {
+    sp.value = '';
+    sp.readOnly = true;
+  }
+}
+
+function toggleCheckbox(item) {
+  item.classList.toggle('checked');
+  var cb = item.querySelector('input[type="checkbox"]');
+  cb.checked = !cb.checked;
+}
+
+document.getElementById('category-select').addEventListener('change', function() {
+  var categoryId = this.value;
+  if (!categoryId) return;
+  fetch('/get-attributes/' + categoryId + '/')
+    .then(r => r.json())
+    .then(data => {
+      // Sizes
+      var sg = document.getElementById('sizes-group');
+      sg.innerHTML = '';
+      if (data.sizes.length === 0) {
+        sg.innerHTML = '<span style="font-size:13px;color:#aaa;font-style:italic;">No sizes for this category</span>';
+      } else {
+        data.sizes.forEach(function(s) {
+          var item = document.createElement('label');
+          item.className = 'checkbox-item';
+          item.innerHTML = '<input type="checkbox" name="sizes[]" value="' + s.id + '"><span>' + s.size_name + '</span>';
+          item.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'INPUT') {
+              var cb = item.querySelector('input');
+              cb.checked = !cb.checked;
+              item.classList.toggle('checked', cb.checked);
+              e.preventDefault();
+            } else {
+              item.classList.toggle('checked', e.target.checked);
+            }
+          });
+          sg.appendChild(item);
+        });
+      }
+
+      // Colors
+      var cg = document.getElementById('colors-group');
+      cg.innerHTML = '';
+      if (data.colors.length === 0) {
+        cg.innerHTML = '<span style="font-size:13px;color:#aaa;font-style:italic;">No colors for this category</span>';
+      } else {
+        data.colors.forEach(function(c) {
+          var item = document.createElement('label');
+          item.className = 'checkbox-item';
+          item.innerHTML = '<input type="checkbox" name="colors[]" value="' + c.id + '"><span>' + c.color_name + '</span>';
+          item.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'INPUT') {
+              var cb = item.querySelector('input');
+              cb.checked = !cb.checked;
+              item.classList.toggle('checked', cb.checked);
+              e.preventDefault();
+            } else {
+              item.classList.toggle('checked', e.target.checked);
+            }
+          });
+          cg.appendChild(item);
+        });
+      }
+
+      // Brands & Materials
+      var bs = document.getElementById('brand-select');
+      bs.innerHTML = '<option value="">Select Brand</option>';
+      data.brands.forEach(function(b) {
+        bs.innerHTML += '<option value="' + b.id + '">' + b.brand_name + '</option>';
+      });
+
+      var ms = document.getElementById('material-select');
+      ms.innerHTML = '<option value="">Select Material</option>';
+      data.materials.forEach(function(m) {
+        ms.innerHTML += '<option value="' + m.id + '">' + m.material_name + '</option>';
+      });
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add Customer</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body{
+  font-family:'Inter',sans-serif;
+  background:#f5f3ef;
+  padding:40px;
+  color:#333;
+}
+
+.container{ max-width:700px; margin:auto; }
+
+.back{
+  text-decoration:none;
+  color:#666;
+  font-size:14px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  margin-bottom:20px;
+}
+.back:hover{ color:#111; }
+
+.page-title{
+  font-family:'Playfair Display',serif;
+  font-size:36px;
+  margin-bottom:5px;
+}
+
+.subtitle{
+  color:#888;
+  margin-bottom:30px;
+  font-size:14px;
+}
+
+.card{
+  background:white;
+  padding:30px;
+  border-radius:14px;
+  border:1px solid #e8e4dc;
+  margin-bottom:20px;
+}
+
+.section-title{
+  font-weight:600;
+  margin-bottom:20px;
+  font-size:16px;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  column-gap:24px;
+  row-gap:20px;
+}
+
+.full{ grid-column:1/-1; }
+
+label{
+  font-size:13px;
+  font-weight:500;
+  display:block;
+  margin-bottom:6px;
+  color:#555;
+}
+
+input{
+  width:100%;
+  padding:11px 12px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  font-size:14px;
+  transition:0.2s;
+  background:white;
+}
+
+input:focus{
+  outline:none;
+  border-color:#111;
+  box-shadow:0 0 0 2px rgba(0,0,0,0.05);
+}
+
+.actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:24px;
+}
+
+.cancel{
+  padding:10px 18px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  background:white;
+  cursor:pointer;
+  font-size:14px;
+  text-decoration:none;
+  color:#333;
+  display:inline-flex;
+  align-items:center;
+}
+
+.save{
+  padding:10px 22px;
+  border:none;
+  border-radius:8px;
+  background:#111;
+  color:white;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:500;
+}
+
+.save:hover{ background:#333; }
+
+.add-another-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-top:16px;
+  padding:10px 16px;
+  border:1px dashed #aaa;
+  border-radius:8px;
+  background:none;
+  cursor:pointer;
+  font-size:14px;
+  color:#555;
+  font-family:'Inter',sans-serif;
+  transition:0.2s;
+}
+
+.add-another-btn:hover{
+  border-color:#111;
+  color:#111;
+  background:#f9f9f9;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <a href="{% url 'customer_list' %}" class="back">← Back to Customer List</a>
+
+  <h1 class="page-title">Add Customer</h1>
+  <p class="subtitle">Enter the details of the new customer.</p>
+
+  <form method="post">
+  {% csrf_token %}
+
+  <div id="customer-forms">
+
+    <!-- FIRST CUSTOMER -->
+    <div class="card customer-card">
+      <div class="section-title">Customer Information</div>
+
+      <div class="form-grid">
+        <div class="full">
+          <label>Full Name</label>
+          <input type="text" name="full_name" placeholder="e.g. Juan Dela Cruz" required>
+        </div>
+
+        <div>
+          <label>Email</label>
+          <input type="email" name="email" placeholder="e.g. juan@example.com">
+        </div>
+
+        <div>
+          <label>Phone</label>
+          <input type="text" name="phone" placeholder="e.g. 0917-123-4567">
+        </div>
+
+        <div class="full">
+          <label>Address</label>
+          <input type="text" name="address" placeholder="e.g. 123 Main St, Manila">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="actions">
+    <a href="{% url 'customer_list' %}" class="cancel">Cancel</a>
+    <button type="submit" class="save">💾 Save Customers</button>
+  </div>
+
+  </form>
+</div>
+
+<script>
+function addCustomer() {
+  const container = document.getElementById('customer-forms');
+
+  const div = document.createElement('div');
+  div.className = 'card customer-card';
+
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div class="section-title" style="margin-bottom:0;">Customer Information</div>
+      <button type="button"
+        onclick="this.closest('.customer-card').remove()"
+        style="background:none;border:1px solid #ddd;border-radius:6px;padding:5px 10px;cursor:pointer;color:#dc2626;font-size:13px;">
+        ✕ Remove
+      </button>
+    </div>
+
+    <div class="form-grid">
+      <div class="full">
+        <label>Full Name</label>
+        <input type="text" name="full_name" placeholder="e.g. Juan Dela Cruz" required>
+      </div>
+
+      <div>
+        <label>Email</label>
+        <input type="email" name="email" placeholder="e.g. juan@example.com">
+      </div>
+
+      <div>
+        <label>Phone</label>
+        <input type="text" name="phone" placeholder="e.g. 0917-123-4567">
+      </div>
+
+      <div class="full">
+        <label>Address</label>
+        <input type="text" name="address" placeholder="e.g. 123 Main St, Manila">
+      </div>
+    </div>
+  `;
+
+  container.appendChild(div);
+}
+</script>
+
+</body>
+</html>

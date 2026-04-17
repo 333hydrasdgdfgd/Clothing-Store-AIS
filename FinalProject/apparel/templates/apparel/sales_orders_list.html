@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sales Orders</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:'Inter',sans-serif; background:#f5f3ef; padding:40px; color:#333; }
+.container{ max-width:1100px; margin:auto; }
+.page-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px; }
+.page-header-left h1{ font-family:'Playfair Display',serif; font-size:36px; margin-bottom:4px; }
+.page-header-left p{ color:#888; font-size:14px; }
+.page-header-right{ display:flex; align-items:center; gap:12px; }
+.search-box{ display:flex; align-items:center; background:white; border:1px solid #ddd; border-radius:8px; padding:8px 14px; gap:8px; }
+.search-box input{ border:none; outline:none; font-size:14px; width:200px; background:transparent; }
+.create-btn{ text-decoration:none; padding:11px 20px; background:#111; color:white; border-radius:8px; font-size:14px; font-weight:500; white-space:nowrap; }
+.create-btn:hover{ background:#333; }
+.table-card{ background:white; border-radius:14px; border:1px solid #e8e4dc; overflow:hidden; }
+table{ width:100%; border-collapse:collapse; }
+th{ padding:14px 20px; text-align:left; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#888; border-bottom:1px solid #eee; }
+td{ padding:18px 20px; font-size:14px; border-bottom:1px solid #f0ede8; }
+tr:last-child td{ border-bottom:none; }
+tr:hover td{ background:#faf9f7; }
+.so-id{ font-weight:600; font-size:13px; }
+.customer-name{ font-weight:500; }
+.total{ font-weight:700; }
+.badge{ padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; display:inline-block; }
+.badge-walkin{ background:#ede9fe; color:#5b21b6; }
+.badge-online{ background:#dbeafe; color:#1e40af; }
+.badge-cash{ background:#d1fae5; color:#065f46; }
+.badge-card{ background:#fef3c7; color:#92400e; }
+.badge-ewallet{ background:#fce7f3; color:#9d174d; }
+.view-link{ text-decoration:none; color:#888; font-size:13px; display:flex; align-items:center; gap:5px; }
+.view-link:hover{ color:#111; }
+.empty{ text-align:center; color:#aaa; padding:40px; font-size:14px; }
+.back-link{ text-decoration:none; color:#666; font-size:14px; margin-top:20px; display:inline-block; }
+.back-link:hover{ text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Sales Orders</h1>
+      <p>Manage customer sales and transactions.</p>
+    </div>
+    <div class="page-header-right">
+      <form method="get">
+        <div class="search-box">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" name="q" placeholder="Search customer..." value="{{ query|default:'' }}">
+        </div>
+      </form>
+      <a href="{% url 'create_sales_order' %}" class="create-btn">+ Create Sales Order</a>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table>
+      <tr>
+        <th>SO ID</th>
+        <th>Customer</th>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Payment</th>
+        <th>Discount</th>
+        <th>Total Amount</th>
+        <th>Action</th>
+      </tr>
+      {% for so in sales_orders %}
+      <tr>
+        <td><span class="so-id">SO-{{ so.sales_id }}</span></td>
+        <td><span class="customer-name">{{ so.customer.full_name }}</span></td>
+        <td>{{ so.sales_date }}</td>
+        <td><span class="badge badge-{{ so.type_of_sale|lower|cut:'-' }}">{{ so.type_of_sale }}</span></td>
+        <td><span class="badge badge-{{ so.payment_method|lower|cut:'-' }}">{{ so.payment_method }}</span></td>
+        <td>{{ so.discount }}%</td>
+        <td><span class="total">₱{{ so.total_amount }}</span></td>
+        <td>
+          <a class="view-link" href="{% url 'sales_order_details' so.sales_id %}">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            View
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="empty">No sales orders found.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <a href="{% url 'dashboard' %}" class="back-link">← Back to Dashboard</a>
+</div>
+</body>
+</html>

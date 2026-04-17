@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accounting — Aura OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html, body { height:100%; font-family:'Inter',sans-serif; background:#f5f3ef; color:#333; font-size:14px; }
+
+
+/* ── Layout ── */
+.layout { display:flex; height:100vh; overflow:hidden; }
+
+
+/* ── Sidebar ── */
+.sidebar {
+ width:220px; min-width:220px; background:#1a1a1a; color:white;
+ display:flex; flex-direction:column; position:relative; overflow:hidden;
+}
+.sidebar-top { display:flex; flex-direction:column; overflow-y:auto; flex:1; }
+.logo-area { padding:28px 24px 20px; border-bottom:1px solid #2a2a2a; }
+.logo-title { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; letter-spacing:1px; color:white; margin-bottom:3px; }
+.logo-sub { font-size:11px; color:#666; letter-spacing:0.06em; text-transform:uppercase; }
+
+
+.nav-section { padding:16px 12px 4px; }
+.nav-section-label { font-size:10px; font-weight:600; color:#555; letter-spacing:0.1em; text-transform:uppercase; padding:0 12px; margin-bottom:6px; }
+.nav-link {
+ display:flex; align-items:center; gap:10px; padding:10px 12px;
+ border-radius:8px; font-size:13px; font-weight:500; color:#aaa;
+ cursor:pointer; border:none; background:none; width:100%; text-align:left;
+ transition:background 0.15s, color 0.15s; position:relative; text-decoration:none;
+}
+.nav-link:hover { background:#2a2a2a; color:white; }
+.nav-link.active { background:#2a2a2a; color:white; }
+.nav-link.active::before {
+ content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
+ width:3px; height:20px; background:#7EC8A0; border-radius:0 2px 2px 0;
+}
+.nav-icon { font-size:14px; width:16px; text-align:center; }
+
+
+.sidebar-bottom { padding:16px 20px; border-top:1px solid #2a2a2a; }
+.back-btn {
+ display:flex; align-items:center; gap:8px; text-decoration:none;
+ color:#666; font-size:13px; font-weight:500; padding:9px 12px;
+ border-radius:8px; transition:0.2s; border:1px solid #2a2a2a; background:none;
+ width:100%;
+}
+.back-btn:hover { background:#2a2a2a; color:#aaa; }
+
+
+/* ── Main ── */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; background:#f5f3ef; }
+
+
+/* ── Topbar ── */
+.topbar {
+ background:white; border-bottom:1px solid #e8e4dc;
+ padding:0 32px; height:60px;
+ display:flex; align-items:center; justify-content:space-between;
+ position:sticky; top:0; z-index:50; flex-shrink:0;
+}
+.topbar-left { display:flex; align-items:center; gap:12px; }
+.topbar-title { font-size:18px; font-weight:500; color:#333; }
+.topbar-date { font-size:12px; color:#aaa; background:#f5f3ef; padding:4px 10px; border-radius:20px; }
+.topbar-right { display:flex; gap:8px; }
+
+
+/* ── Content ── */
+.content { flex:1; overflow-y:auto; padding:28px 32px; }
+
+
+/* ── Pages ── */
+.page { display:none; animation:fadeIn 0.2s ease; }
+.page.active { display:block; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+
+/* ── Buttons ── */
+.btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; border:none; font-family:'Inter',sans-serif; transition:all 0.15s; white-space:nowrap; text-decoration:none; }
+.btn-primary { background:#1a1a1a; color:white; }
+.btn-primary:hover { background:#333; }
+.btn-outline { background:white; color:#333; border:1px solid #ddd; }
+.btn-outline:hover { background:#f9f9f9; }
+.btn-ghost { background:transparent; color:#777; border:1px solid #e8e4dc; }
+.btn-ghost:hover { background:#f5f3ef; }
+.btn-danger { background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; }
+.btn-danger:hover { background:#fecaca; }
+.btn-sm { padding:6px 12px; font-size:12px; }
+.btn-print { background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
+.btn-warning { background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
+.btn-warning:hover { background:#fde68a; }
+.btn-success { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; }
+.btn-success:hover { background:#a7f3d0; }
+
+
+/* ── Metric Cards ── */
+.metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-bottom:24px; }
+.metric-card { background:white; border:1px solid #e8e4dc; border-radius:12px; padding:20px 22px; }
+.metric-card.dark { background:#1a1a1a; border-color:#1a1a1a; }
+.metric-label { font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:#aaa; margin-bottom:10px; }
+.metric-card.dark .metric-label { color:#555; }
+.metric-value { font-family:'Playfair Display',serif; font-size:26px; color:#1a1a1a; line-height:1; }
+.metric-card.dark .metric-value { color:white; }
+.metric-value.green { color:#065f46; }
+.metric-value.red { color:#991b1b; }
+.metric-value.gold { color:#92400e; }
+.metric-sub { font-size:11px; color:#aaa; margin-top:6px; }
+.metric-card.dark .metric-sub { color:#555; }
+
+/* ── Chart Card ── */
+.chart-card { background:white; border:1px solid #e8e4dc; border-radius:12px; padding:24px; margin-bottom:24px; }
+.chart-header { font-size:15px; font-weight:600; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+.chart-icon { font-size:18px; }
+
+/* ── Table Card ── */
+.table-card { background:white; border:1px solid #e8e4dc; border-radius:14px; overflow:hidden; }
+.table-card-header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #f0ede8; }
+.table-card-title { font-weight:600; font-size:13px; }
+.data-table { width:100%; border-collapse:collapse; }
+.data-table th { text-align:left; padding:11px 18px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:#aaa; background:#faf9f7; border-bottom:1px solid #f0ede8; }
+.data-table td { padding:13px 18px; border-bottom:1px solid #f5f3ef; color:#333; vertical-align:middle; font-size:13px; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table tbody tr:hover td { background:#faf9f7; }
+.data-table .amount { font-family:'Playfair Display',serif; font-size:15px; }
+.data-table .muted { color:#aaa; font-size:12px; }
+.empty-row td { text-align:center; color:#aaa; padding:40px 16px !important; font-style:italic; }
+.amount-green { color:#065f46; }
+.amount-red { color:#991b1b; }
+.amount-gold { color:#92400e; }
+
+
+/* ── Badges ── */
+.badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.badge-paid { background:#d1fae5; color:#065f46; }
+.badge-unpaid { background:#fee2e2; color:#991b1b; }
+.badge-partial { background:#fef3c7; color:#92400e; }
+.badge-pending { background:#fef3c7; color:#92400e; }
+.badge-received { background:#d1fae5; color:#065f46; }
+.badge-cancelled { background:#fee2e2; color:#991b1b; }
+.badge-gray { background:#e5e7eb; color:#374151; }
+.badge-info { background:#dbeafe; color:#1e40af; }
+
+
+/* ── Modal ── */
+.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:200; }
+.modal-overlay.active { display:flex; align-items:center; justify-content:center; }
+.modal { background:white; border-radius:16px; max-width:500px; width:90%; animation:modalSlide 0.2s ease; }
+@keyframes modalSlide { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+.modal-header { padding:22px 26px 18px; border-bottom:1px solid #f0ede8; }
+.modal-title { font-weight:600; font-size:16px; }
+.modal-body { padding:22px 26px; }
+.form-group { margin-bottom:18px; }
+.form-group label { display:block; font-size:13px; font-weight:500; margin-bottom:6px; color:#555; }
+.form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:14px; font-family:'Inter',sans-serif; }
+.form-group textarea { resize:vertical; min-height:80px; }
+.modal-footer { padding:18px 26px; border-top:1px solid #f0ede8; display:flex; justify-content:flex-end; gap:10px; }
+
+
+/* ── Profit & Loss Specific ── */
+#pl-content { background:white; border:1px solid #e8e4dc; border-radius:14px; padding:40px 50px; max-width:900px; margin:0 auto; font-size:14px; }
+.pl-letterhead { text-align:center; border-bottom:2px solid #1a1a1a; padding-bottom:20px; margin-bottom:28px; }
+.pl-company { font-family:'Playfair Display',serif; font-size:32px; font-weight:700; letter-spacing:1px; color:#1a1a1a; }
+.pl-doc-title { font-size:15px; font-weight:600; color:#666; margin-top:6px; letter-spacing:0.05em; text-transform:uppercase; }
+.pl-period { font-size:12px; color:#999; margin-top:4px; }
+.pl-section { margin-bottom:26px; }
+.pl-section-head { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:#999; border-bottom:1px solid #f0ede8; padding-bottom:6px; margin-bottom:12px; }
+.pl-line { display:flex; justify-content:space-between; padding:8px 0; font-size:13px; }
+.pl-line span:first-child { color:#555; }
+.pl-line span:last-child { font-family:'Playfair Display',serif; font-size:14px; }
+.pl-subtotal { display:flex; justify-content:space-between; padding:10px 0; font-weight:600; border-top:1px solid #f0ede8; margin-top:8px; }
+.pl-subtotal span:last-child { font-family:'Playfair Display',serif; font-size:15px; }
+.pl-highlight { display:flex; justify-content:space-between; padding:14px 18px; margin:20px 0; background:#faf9f7; border-radius:10px; font-weight:600; font-size:14px; }
+.pl-highlight span:last-child { font-family:'Playfair Display',serif; font-size:17px; }
+.pl-net { display:flex; justify-content:space-between; padding:16px 20px; margin-top:24px; background:#1a1a1a; color:white; border-radius:10px; font-weight:700; font-size:15px; }
+.pl-net.loss { background:#991b1b; }
+.pl-net span:last-child { font-family:'Playfair Display',serif; font-size:20px; }
+.pl-footer { text-align:center; font-size:11px; color:#aaa; margin-top:32px; padding-top:16px; border-top:1px solid #f0ede8; }
+
+
+/* ── Trial Balance Specific ── */
+.trial-balance { background:white; border:1px solid #e8e4dc; border-radius:14px; overflow:hidden; max-width:900px; margin:0 auto; }
+.tb-header { background:#faf9f7; padding:20px 26px; text-align:center; border-bottom:2px solid #1a1a1a; }
+.tb-title { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:#1a1a1a; }
+.tb-subtitle { font-size:12px; color:#666; margin-top:4px; }
+.tb-table-wrap { padding:24px 30px; }
+.tb-table { width:100%; border-collapse:collapse; }
+.tb-table thead th { text-align:left; padding:12px 16px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:#aaa; border-bottom:2px solid #1a1a1a; }
+.tb-table thead th:not(:first-child) { text-align:right; }
+.tb-row td { padding:12px 16px; border-bottom:1px solid #f5f3ef; }
+.tb-account { font-weight:500; }
+.tb-amount { text-align:right; font-family:'Playfair Display',serif; font-size:14px; }
+.tb-total-row { border-top:2px solid #1a1a1a; }
+.tb-total-row td { padding:14px 16px; font-weight:700; }
+.tb-total-label { text-transform:uppercase; font-size:12px; letter-spacing:0.08em; }
+.tb-total-amt { text-align:right; font-family:'Playfair Display',serif; font-size:16px; }
+
+
+/* ── Journal Entry Specific ── */
+.journal-entries { max-width:900px; margin:0 auto; }
+.journal-entry { background:white; border:1px solid #e8e4dc; border-radius:12px; padding:20px 24px; margin-bottom:16px; }
+.je-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.je-ref { font-weight:600; font-size:13px; }
+.je-meta { font-size:11px; color:#aaa; margin-top:2px; }
+.je-lines { background:#faf9f7; border-radius:8px; padding:16px; }
+.je-row { display:flex; justify-content:space-between; padding:6px 0; font-size:13px; }
+.je-account { color:#555; }
+.je-account.indent { padding-left:20px; }
+.je-dr, .je-cr { font-family:'Playfair Display',serif; font-size:14px; width:80px; text-align:right; }
+.je-tag { display:inline-block; width:30px; text-align:center; font-size:10px; font-weight:700; color:#999; }
+.je-desc { margin-top:10px; padding-top:10px; border-top:1px solid #f0ede8; font-size:11px; color:#888; font-style:italic; }
+</style>
+</head>
+<body class="layout">
+
+<div class="sidebar">
+<div class="sidebar-top">
+  <div class="logo-area">
+    <div class="logo-title">AURA OS</div>
+    <div class="logo-sub">Accounting</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">Views</div>
+    <button class="nav-link active" onclick="showPage('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+    </button>
+    <button class="nav-link" onclick="showPage('invoices')">
+      <span class="nav-icon">🧾</span> Invoices
+    </button>
+    <button class="nav-link" onclick="showPage('receipts')">
+      <span class="nav-icon">💵</span> Receipts
+    </button>
+    <button class="nav-link" onclick="showPage('expenses')">
+      <span class="nav-icon">💳</span> Expenses
+    </button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">Reports</div>
+    <button class="nav-link" onclick="showPage('pl')">
+      <span class="nav-icon">📈</span> P&L Statement
+    </button>
+    <button class="nav-link" onclick="showPage('tb')">
+      <span class="nav-icon">⚖️</span> Trial Balance
+    </button>
+    <button class="nav-link" onclick="showPage('sales-journal')">
+      <span class="nav-icon">📖</span> Sales Journal
+    </button>
+    <button class="nav-link" onclick="showPage('purchases-journal')">
+      <span class="nav-icon">📋</span> Purchases Journal
+    </button>
+  </div>
+</div>
+<div class="sidebar-bottom">
+  <a href="{% url 'dashboard' %}" class="back-btn">
+    <span>←</span> Back to Dashboard
+  </a>
+</div>
+</div>
+
+<div class="main">
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-title">Accounting</div>
+    <div class="topbar-date" id="topbar-date">—</div>
+  </div>
+  <div class="topbar-right">
+    <!-- Can add global actions here -->
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ============================================================ -->
+<!--  DASHBOARD PAGE                                              -->
+<!-- ============================================================ -->
+<div id="dashboard-page" class="page active">
+
+  <!-- Metrics -->
+  <div class="metrics">
+    <div class="metric-card">
+      <div class="metric-label">Total Revenue</div>
+      <div class="metric-value green" id="dash-revenue">₱0.00</div>
+      <div class="metric-sub">From invoices</div>
+    </div>
+    <div class="metric-card dark">
+      <div class="metric-label">Total Expenses</div>
+      <div class="metric-value" id="dash-expenses">₱0.00</div>
+      <div class="metric-sub">Purchases + Expenses</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Invoice Count</div>
+      <div class="metric-value" id="dash-count">0</div>
+      <div class="metric-sub">Total invoices</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Net Income</div>
+      <div class="metric-value green" id="dash-net">₱0.00</div>
+      <div class="metric-sub" id="dash-net-sub">—</div>
+    </div>
+  </div>
+
+  <!-- Income vs Expenses Chart -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <span class="chart-icon">📊</span>
+      <span>Monthly Income vs Expenses (Last 6 Months)</span>
+    </div>
+    <canvas id="accountingChart" height="80"></canvas>
+  </div>
+
+  <!-- Recent Invoices -->
+  <div class="table-card" style="margin-bottom:20px;">
+    <div class="table-card-header">
+      <h3 class="table-card-title">Recent Invoices</h3>
+      <button class="btn btn-ghost btn-sm" onclick="showPage('invoices')">View All →</button>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Ref</th>
+          <th>Customer</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="dash-inv-tbody">
+        <tr class="empty-row"><td colspan="4">No invoices yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Recent Expenses -->
+  <div class="table-card" style="margin-bottom:20px;">
+    <div class="table-card-header">
+      <h3 class="table-card-title">Recent Expenses</h3>
+      <button class="btn btn-ghost btn-sm" onclick="showPage('expenses')">View All →</button>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody id="dash-exp-tbody">
+        <tr class="empty-row"><td colspan="3">No expenses yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Recent Receipts -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <h3 class="table-card-title">Recent Receipts</h3>
+      <button class="btn btn-ghost btn-sm" onclick="showPage('receipts')">View All →</button>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Ref</th>
+          <th>Date</th>
+          <th>Source</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody id="dash-rec-tbody">
+        <tr class="empty-row"><td colspan="6">No receipts yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!--  INVOICES PAGE                                               -->
+<!-- ============================================================ -->
+<div id="invoices-page" class="page">
+  <div class="table-card">
+    <div class="table-card-header">
+      <h3 class="table-card-title">Invoices</h3>
+      <div style="display:flex;gap:8px;">
+        <a href="{% url 'export_invoices_excel' %}" class="btn btn-success btn-sm">
+          <span>📊</span> Export Excel
+        </a>
+        <button class="btn btn-primary btn-sm" onclick="openInvoiceModal()">+ New Invoice</button>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Ref</th>
+          <th>Date</th>
+          <th>Customer</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="invoices-tbody">
+        <tr class="empty-row"><td colspan="6">No invoices yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  RECEIPTS PAGE                                               -->
+<!-- ============================================================ -->
+<div id="receipts-page" class="page">
+  <div class="table-card">
+    <div class="table-card-header">
+      <h3 class="table-card-title">Receipts</h3>
+      <div style="display:flex;gap:8px;">
+        <a href="{% url 'export_receipts_excel' %}" class="btn btn-success btn-sm">
+          <span>📊</span> Export Excel
+        </a>
+        <button class="btn btn-primary btn-sm" onclick="openReceiptModal()">+ New Receipt</button>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Ref</th>
+          <th>Date</th>
+          <th>Source</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Type</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="receipts-tbody">
+        <tr class="empty-row"><td colspan="7">No receipts yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  EXPENSES PAGE                                               -->
+<!-- ============================================================ -->
+<div id="expenses-page" class="page">
+  <div class="table-card">
+    <div class="table-card-header">
+      <h3 class="table-card-title">Expenses</h3>
+      <div style="display:flex;gap:8px;">
+        <a href="{% url 'export_expenses_excel' %}" class="btn btn-success btn-sm">
+          <span>📊</span> Export Excel
+        </a>
+        <button class="btn btn-primary btn-sm" onclick="openExpenseModal()">+ New Expense</button>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="expenses-tbody">
+        <tr class="empty-row"><td colspan="5">No expenses yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  P&L STATEMENT                                               -->
+<!-- ============================================================ -->
+<div id="pl-page" class="page">
+  <div style="text-align:right;margin-bottom:16px;">
+    <button class="btn btn-print btn-sm" onclick="window.print()">🖨️ Print</button>
+  </div>
+  <div id="pl-content">Loading...</div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  TRIAL BALANCE                                               -->
+<!-- ============================================================ -->
+<div id="tb-page" class="page">
+  <div style="text-align:right;margin-bottom:16px;">
+    <button class="btn btn-print btn-sm" onclick="window.print()">🖨️ Print</button>
+  </div>
+  <div class="trial-balance">
+    <div class="tb-header">
+      <div class="tb-title">Trial Balance</div>
+      <div class="tb-subtitle">Aura Apparel • As of <span id="tb-date">—</span></div>
+    </div>
+    <div class="tb-table-wrap">
+      <table class="tb-table">
+        <thead>
+          <tr>
+            <th>Account Name</th>
+            <th>Debit</th>
+            <th>Credit</th>
+          </tr>
+        </thead>
+        <tbody id="tb-tbody">
+          <tr class="empty-row"><td colspan="3">No transactions yet.</td></tr>
+        </tbody>
+        <tfoot id="tb-tfoot"></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  SALES JOURNAL                                               -->
+<!-- ============================================================ -->
+<div id="sales-journal-page" class="page">
+  <div style="text-align:right;margin-bottom:16px;">
+    <a href="{% url 'export_sales_orders_excel' %}" class="btn btn-success btn-sm">
+      <span>📊</span> Export Sales Orders Excel
+    </a>
+  </div>
+  <div class="journal-entries" id="sales-journal-list">
+    <div style="text-align:center;color:#aaa;padding:60px;font-style:italic">No sales entries yet.</div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  PURCHASES JOURNAL                                           -->
+<!-- ============================================================ -->
+<div id="purchases-journal-page" class="page">
+  <div style="text-align:right;margin-bottom:16px;">
+    <a href="{% url 'export_purchase_orders_excel' %}" class="btn btn-success btn-sm">
+      <span>📊</span> Export Purchase Orders Excel
+    </a>
+  </div>
+  <div class="journal-entries" id="purchases-journal-list">
+    <div style="text-align:center;color:#aaa;padding:60px;font-style:italic">No purchase entries yet.</div>
+  </div>
+</div>
+
+</div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  MODALS                                                      -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="invoice-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">New Invoice</div></div>
+    <div class="modal-body">
+      <form id="invoice-form">
+        <div class="form-group">
+          <label>Invoice Reference</label>
+          <input type="text" name="ref" placeholder="e.g. INV-001" required>
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" name="date" required>
+        </div>
+        <div class="form-group">
+          <label>Customer Name</label>
+          <input type="text" name="customer" placeholder="e.g. Juan Dela Cruz" required>
+        </div>
+        <div class="form-group">
+          <label>Amount (₱)</label>
+          <input type="number" step="0.01" name="amount" placeholder="0.00" required>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select name="status" required>
+            <option value="unpaid">Unpaid</option>
+            <option value="paid">Paid</option>
+            <option value="partial">Partial</option>
+          </select>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeInvoiceModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveInvoice()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="receipt-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">New Receipt</div></div>
+    <div class="modal-body">
+      <form id="receipt-form">
+        <div class="form-group">
+          <label>Receipt Reference</label>
+          <input type="text" name="ref" placeholder="e.g. RCT-001" required>
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" name="date" required>
+        </div>
+        <div class="form-group">
+          <label>Source</label>
+          <input type="text" name="source" placeholder="e.g. Supplier ABC" required>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" name="description" placeholder="Brief description">
+        </div>
+        <div class="form-group">
+          <label>Amount (₱)</label>
+          <input type="number" step="0.01" name="amount" placeholder="0.00" required>
+        </div>
+        <div class="form-group">
+          <label>Receipt Type</label>
+          <select name="receipt_type" required>
+            <option value="purchase">Purchase</option>
+            <option value="payment-received">Payment Received</option>
+            <option value="refund">Refund</option>
+          </select>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeReceiptModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveReceipt()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="expense-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">New Expense</div></div>
+    <div class="modal-body">
+      <form id="expense-form">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" name="date" required>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select name="category" required>
+            <option value="Rent">Rent</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Salaries">Salaries</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Office Supplies">Office Supplies</option>
+            <option value="Transportation">Transportation</option>
+            <option value="Miscellaneous">Miscellaneous</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea name="description" placeholder="Brief description"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Amount (₱)</label>
+          <input type="number" step="0.01" name="amount" placeholder="0.00" required>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeExpenseModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExpense()">Save</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const fmt = v => `₱${parseFloat(v).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+const fmtN = v => parseFloat(v).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    for (const cookie of document.cookie.split(';')) {
+      const c = cookie.trim();
+      if (c.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(c.slice(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const CSRF = getCookie('csrftoken');
+
+function showPage(pageId) {
+ document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+ document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+ const page = document.getElementById(pageId+'-page');
+ if (page) page.classList.add('active');
+ event.target.classList.add('active');
+
+ if (pageId === 'invoices') renderInvoices();
+ else if (pageId === 'receipts') renderReceipts();
+ else if (pageId === 'expenses') renderExpenses();
+ else if (pageId === 'pl') renderPL();
+ else if (pageId === 'tb') renderTrialBalance();
+ else if (pageId === 'sales-journal') renderSalesJournal();
+ else if (pageId === 'purchases-journal') renderPurchasesJournal();
+ else if (pageId === 'dashboard') renderDashboard();
+}
+
+// ── API helpers — always read from / write to the database ──
+function getInvoices() {
+  return fetch('/api/invoices/').then(r => r.json());
+}
+function getReceipts() {
+  return fetch('/api/receipts/').then(r => r.json());
+}
+function getExpenses() {
+  return fetch('/api/expenses/').then(r => r.json());
+}
+
+// ── Invoice modal ──
+function openInvoiceModal() { document.getElementById('invoice-modal').classList.add('active'); }
+function closeInvoiceModal() { document.getElementById('invoice-modal').classList.remove('active'); document.getElementById('invoice-form').reset(); }
+async function saveInvoice() {
+  const form = document.getElementById('invoice-form');
+  const data = Object.fromEntries(new FormData(form));
+  const res = await fetch('/api/invoices/', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken': CSRF},
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) { alert('Error saving invoice.'); return; }
+  closeInvoiceModal();
+  renderInvoices();
+  renderDashboard();
+}
+async function deleteInvoice(id) {
+  if(!confirm('Delete this invoice?')) return;
+  await fetch(`/api/invoices/${id}/`, {method:'DELETE', headers:{'X-CSRFToken': CSRF}});
+  renderInvoices();
+  renderDashboard();
+}
+
+// ── Receipt modal ──
+function openReceiptModal() { document.getElementById('receipt-modal').classList.add('active'); }
+function closeReceiptModal() { document.getElementById('receipt-modal').classList.remove('active'); document.getElementById('receipt-form').reset(); }
+async function saveReceipt() {
+  const form = document.getElementById('receipt-form');
+  const data = Object.fromEntries(new FormData(form));
+  const res = await fetch('/api/receipts/', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken': CSRF},
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) { alert('Error saving receipt.'); return; }
+  closeReceiptModal();
+  renderReceipts();
+  renderDashboard();
+}
+async function deleteReceipt(id) {
+  if(!confirm('Delete this receipt?')) return;
+  await fetch(`/api/receipts/${id}/`, {method:'DELETE', headers:{'X-CSRFToken': CSRF}});
+  renderReceipts();
+  renderDashboard();
+}
+
+// ── Expense modal ──
+function openExpenseModal() { document.getElementById('expense-modal').classList.add('active'); }
+function closeExpenseModal() { document.getElementById('expense-modal').classList.remove('active'); document.getElementById('expense-form').reset(); }
+async function saveExpense() {
+  const form = document.getElementById('expense-form');
+  const data = Object.fromEntries(new FormData(form));
+  const res = await fetch('/api/expenses/', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken': CSRF},
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) { alert('Error saving expense.'); return; }
+  closeExpenseModal();
+  renderExpenses();
+  renderDashboard();
+}
+async function deleteExpense(id) {
+  if(!confirm('Delete this expense?')) return;
+  await fetch(`/api/expenses/${id}/`, {method:'DELETE', headers:{'X-CSRFToken': CSRF}});
+  renderExpenses();
+  renderDashboard();
+}
+
+async function renderInvoices() {
+ const invoices = await getInvoices();
+ const tbody = document.getElementById('invoices-tbody');
+ if (!invoices.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No invoices yet. Click + New Invoice.</td></tr>'; return; }
+ tbody.innerHTML = invoices.map(inv => `<tr>
+   <td><strong>${inv.ref}</strong></td>
+   <td>${inv.date}</td>
+   <td>${inv.customer}</td>
+   <td class="amount amount-green">${fmt(inv.amount)}</td>
+   <td><span class="badge badge-${inv.status}">${inv.status}</span></td>
+   <td><button class="btn btn-danger btn-sm" onclick="deleteInvoice(${inv.id})">Delete</button></td>
+ </tr>`).join('');
+}
+async function renderReceipts() {
+ const receipts = await getReceipts();
+ const tbody = document.getElementById('receipts-tbody');
+ if (!receipts.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No receipts yet. Click + New Receipt.</td></tr>'; return; }
+ const getBadge = t => t==='purchase'?'badge-pending':t==='payment-received'?'badge-paid':'badge-info';
+ const getLabel = t => t==='purchase'?'Purchase':t==='payment-received'?'Payment Received':'Refund';
+ tbody.innerHTML = receipts.map(r => `<tr>
+   <td><strong>${r.ref}</strong></td>
+   <td>${r.date}</td>
+   <td>${r.source}</td>
+   <td class="muted">${r.description||'—'}</td>
+   <td class="amount amount-red">${fmt(r.amount)}</td>
+   <td><span class="badge ${getBadge(r.receipt_type)}">${getLabel(r.receipt_type)}</span></td>
+   <td><button class="btn btn-danger btn-sm" onclick="deleteReceipt(${r.id})">Delete</button></td>
+ </tr>`).join('');
+}
+async function renderExpenses() {
+ const expenses = await getExpenses();
+ const tbody = document.getElementById('expenses-tbody');
+ if (!expenses.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No expenses yet. Click + New Expense.</td></tr>'; return; }
+ tbody.innerHTML = expenses.map(e => `<tr>
+   <td>${e.date}</td>
+   <td><span class="badge badge-gray">${e.category}</span></td>
+   <td class="muted">${e.description||'—'}</td>
+   <td class="amount amount-red">${fmt(e.amount)}</td>
+   <td><button class="btn btn-danger btn-sm" onclick="deleteExpense(${e.id})">Delete</button></td>
+ </tr>`).join('');
+}
+
+async function renderSalesJournal() {
+ const invoices = await getInvoices();
+ let journalHtml = '';
+ invoices.forEach(inv => {
+   const badge = inv.status === 'paid' ? 'badge-paid' : inv.status === 'partial' ? 'badge-partial' : 'badge-unpaid';
+   const statusLabel = inv.status.charAt(0).toUpperCase() + inv.status.slice(1);
+   journalHtml += `<div class="journal-entry">
+     <div class="je-head"><div><div class="je-ref">${inv.ref}</div><div class="je-meta">${inv.date} · ${inv.customer}</div></div><span class="badge ${badge}">${statusLabel}</span></div>
+     <div class="je-lines">`;
+   if (inv.status === 'paid') {
+     journalHtml += `<div class="je-row"><span class="je-account">Cash</span><span style="display:flex;gap:16px"><span class="je-dr">${fmt(inv.amount)}</span><span class="je-tag">DR</span></span></div>
+       <div class="je-row"><span class="je-account indent">Sales</span><span style="display:flex;gap:16px"><span class="je-cr">${fmt(inv.amount)}</span><span class="je-tag">CR</span></span></div>`;
+   } else {
+     journalHtml += `<div class="je-row"><span class="je-account">Accounts Receivable</span><span style="display:flex;gap:16px"><span class="je-dr">${fmt(inv.amount)}</span><span class="je-tag">DR</span></span></div>
+       <div class="je-row"><span class="je-account indent">Sales</span><span style="display:flex;gap:16px"><span class="je-cr">${fmt(inv.amount)}</span><span class="je-tag">CR</span></span></div>`;
+   }
+   journalHtml += `<div class="je-desc">To record sale to ${inv.customer}.</div></div></div>`;
+ });
+ document.getElementById('sales-journal-list').innerHTML = journalHtml || '<div style="text-align:center;color:#aaa;padding:60px;font-style:italic">No sales entries yet.</div>';
+}
+
+async function renderPurchasesJournal() {
+ const receipts = await getReceipts();
+ const purchases = receipts.filter(r => r.receipt_type === 'purchase');
+ const paymentsRec = receipts.filter(r => r.receipt_type === 'payment-received');
+ const refundEntries = receipts.filter(r => r.receipt_type === 'refund');
+ let journalHtml = '';
+
+ purchases.forEach(r => {
+   journalHtml += `<div class="journal-entry">
+     <div class="je-head"><div><div class="je-ref">${r.ref}</div><div class="je-meta">${r.date} · ${r.source}</div></div><span class="badge badge-pending">Purchase</span></div>
+     <div class="je-lines">
+       <div class="je-row"><span class="je-account">Purchases (COGS)</span><span style="display:flex;gap:16px"><span class="je-dr">${fmt(r.amount)}</span><span class="je-tag">DR</span></span></div>
+       <div class="je-row"><span class="je-account indent">Cash</span><span style="display:flex;gap:16px"><span class="je-cr">${fmt(r.amount)}</span><span class="je-tag">CR</span></span></div>
+       <div class="je-desc">To record purchase from supplier ${r.source}.</div>
+     </div>
+   </div>`;
+ });
+
+ paymentsRec.forEach(r => {
+   journalHtml += `<div class="journal-entry">
+     <div class="je-head"><div><div class="je-ref">${r.ref}</div><div class="je-meta">${r.date} · ${r.source}</div></div><span class="badge badge-paid">Payment</span></div>
+     <div class="je-lines">
+       <div class="je-row"><span class="je-account">Cash</span><span style="display:flex;gap:16px"><span class="je-dr">${fmt(r.amount)}</span><span class="je-tag">DR</span></span></div>
+       <div class="je-row"><span class="je-account indent">Accounts Receivable</span><span style="display:flex;gap:16px"><span class="je-cr">${fmt(r.amount)}</span><span class="je-tag">CR</span></span></div>
+       <div class="je-desc">To record collection of payment from ${r.source}.</div>
+     </div>
+   </div>`;
+ });
+
+ refundEntries.forEach(r => {
+   journalHtml += `<div class="journal-entry">
+     <div class="je-head"><div><div class="je-ref">${r.ref}</div><div class="je-meta">${r.date} · ${r.source}</div></div><span class="badge badge-info">Refund</span></div>
+     <div class="je-lines">
+       <div class="je-row"><span class="je-account">Cash</span><span style="display:flex;gap:16px"><span class="je-dr">${fmt(r.amount)}</span><span class="je-tag">DR</span></span></div>
+       <div class="je-row"><span class="je-account indent">Purchases (COGS)</span><span style="display:flex;gap:16px"><span class="je-cr">${fmt(r.amount)}</span><span class="je-tag">CR</span></span></div>
+       <div class="je-desc">To record refund received from supplier ${r.source}.</div>
+     </div>
+   </div>`;
+ });
+
+ document.getElementById('purchases-journal-list').innerHTML = journalHtml || '<div style="text-align:center;color:#aaa;padding:60px;font-style:italic">No purchase entries yet.</div>';
+}
+async function renderTrialBalance() {
+ const [invoices, receipts, expenses] = await Promise.all([getInvoices(), getReceipts(), getExpenses()]);
+
+ const cashSales = invoices.filter(i => i.status === 'paid');
+ const creditSales = invoices.filter(i => i.status !== 'paid');
+ const totalCashSales = cashSales.reduce((s,i) => s + parseFloat(i.amount), 0);
+ const totalCreditSales = creditSales.reduce((s,i) => s + parseFloat(i.amount), 0);
+
+ const purchases = receipts.filter(r => r.receipt_type === 'purchase');
+ const paymentsReceived = receipts.filter(r => r.receipt_type === 'payment-received');
+ const refunds = receipts.filter(r => r.receipt_type === 'refund');
+ const totalPurchases = purchases.reduce((s,r) => s + parseFloat(r.amount), 0);
+ const totalPaymentsReceived = paymentsReceived.reduce((s,r) => s + parseFloat(r.amount), 0);
+ const totalRefunds = refunds.reduce((s,r) => s + parseFloat(r.amount), 0);
+ const totalExpenses = expenses.reduce((s,e) => s + parseFloat(e.amount), 0);
+
+ const arBalance = Math.max(0, totalCreditSales - totalPaymentsReceived);
+ const cashInflows = totalCashSales + totalPaymentsReceived + totalRefunds;
+ const cashOutflows = totalPurchases + totalExpenses;
+ const cashBalance = cashInflows - cashOutflows;
+
+ // Build accounts in proper TB order: Assets, Liabilities, Revenue, COGS, Expenses
+ const accounts = [];
+ if (Math.abs(cashBalance) > 0.01) accounts.push({ name: 'Cash', debit: cashBalance > 0 ? cashBalance : 0, credit: cashBalance < 0 ? -cashBalance : 0 });
+ if (arBalance > 0) accounts.push({ name: 'Accounts Receivable', debit: arBalance, credit: 0 });
+ const totalSales = totalCashSales + totalCreditSales;
+ if (totalSales > 0) accounts.push({ name: 'Sales', debit: 0, credit: totalSales });
+ if (totalPurchases > 0) accounts.push({ name: 'Cost of Goods Sold', debit: totalPurchases, credit: 0 });
+ if (totalRefunds > 0) accounts.push({ name: 'Purchase Returns', debit: 0, credit: totalRefunds });
+
+ const expByCat = {};
+ expenses.forEach(e => { expByCat[e.category] = (expByCat[e.category] || 0) + parseFloat(e.amount); });
+ for (const [cat, amt] of Object.entries(expByCat)) {
+   if (amt > 0) accounts.push({ name: `${cat} Expense`, debit: amt, credit: 0 });
+ }
+
+ const filtered = accounts.filter(a => a.debit !== 0 || a.credit !== 0);
+ const totalDebit = filtered.reduce((s, a) => s + a.debit, 0);
+ const totalCredit = filtered.reduce((s, a) => s + a.credit, 0);
+
+ const rows = filtered.map(a => `
+   <tr class="tb-row">
+     <td class="tb-account">${a.name}</td>
+     <td class="tb-amount">${a.debit > 0 ? fmtN(a.debit) : ''}</td>
+     <td class="tb-amount">${a.credit > 0 ? fmtN(a.credit) : ''}</td>
+   </tr>`).join('');
+
+ document.getElementById('tb-tbody').innerHTML = filtered.length ? rows : '<tr class="empty-row"><td colspan="3">Add transactions to generate trial balance.</td></tr>';
+ document.getElementById('tb-tfoot').innerHTML = `
+   <tr class="tb-total-row">
+     <td class="tb-total-label">Total</td>
+     <td class="tb-total-amt">${fmtN(totalDebit)}</td>
+     <td class="tb-total-amt">${fmtN(totalCredit)}</td>
+   </tr>`;
+}
+async function renderDashboard() {
+ const [invoices, receipts, expenses] = await Promise.all([getInvoices(), getReceipts(), getExpenses()]);
+
+ const totalRev = invoices.reduce((s,i)=>s+parseFloat(i.amount),0);
+ const purchases = receipts.filter(r => r.receipt_type === 'purchase');
+ const totalPurch = purchases.reduce((s,r)=>s+parseFloat(r.amount),0);
+ const totalExp = expenses.reduce((s,e)=>s+parseFloat(e.amount),0);
+ const totalExpenses = totalPurch + totalExp;
+ const net = totalRev - totalExpenses;
+
+ document.getElementById('dash-revenue').textContent = fmt(totalRev);
+ document.getElementById('dash-expenses').textContent = fmt(totalExpenses);
+ document.getElementById('dash-count').textContent = invoices.length;
+ const netEl = document.getElementById('dash-net');
+ netEl.textContent = fmt(net);
+ netEl.className = 'metric-value '+(net>=0?'green':'red');
+ document.getElementById('dash-net-sub').textContent = net>=0?'Profitable':'Operating at a loss';
+
+ document.getElementById('dash-inv-tbody').innerHTML = invoices.slice(0,5).map(i=>`<tr><td><strong>${i.ref}</strong></td><td>${i.customer}</td><td class="amount">${fmt(i.amount)}</td><td><span class="badge badge-${i.status}">${i.status}</span></td></tr>`).join('') || '<tr class="empty-row"><td colspan="4">None</tr>';
+ document.getElementById('dash-exp-tbody').innerHTML = expenses.slice(0,5).map(e=>`<tr><td>${e.date}</td><td><span class="badge badge-gray">${e.category}</span></td><td class="amount amount-red">${fmt(e.amount)}</td></tr>`).join('') || '<tr class="empty-row"><td colspan="3">None</tr>';
+
+ const recTypeBadge = t => t==='purchase'?'badge-pending':t==='payment-received'?'badge-paid':'badge-info';
+ const recTypeLabel = t => t==='purchase'?'Purchase':t==='payment-received'?'Payment Received':'Refund';
+ document.getElementById('dash-rec-tbody').innerHTML = receipts.slice(0,5).map(r=>`<tr><td><strong>${r.ref}</strong></td><td>${r.date}</td><td>${r.source}</td><td class="muted">${r.description||'—'}</td><td class="amount amount-red">${fmt(r.amount)}</td><td><span class="badge ${recTypeBadge(r.receipt_type)}">${recTypeLabel(r.receipt_type)}</span></td></tr>`).join('') || '<tr class="empty-row"><td colspan="6">None</tr>';
+}
+async function renderPL() {
+ const [invoices, receipts, expenses] = await Promise.all([getInvoices(), getReceipts(), getExpenses()]);
+
+ const totalSales = invoices.reduce((s,i)=>s+parseFloat(i.amount),0);
+ const purchases = receipts.filter(r => r.receipt_type === 'purchase');
+ const totalPurch = purchases.reduce((s,r)=>s+parseFloat(r.amount),0);
+ const refunds = receipts.filter(r => r.receipt_type === 'refund');
+ const totalRefunds = refunds.reduce((s,r)=>s+parseFloat(r.amount),0);
+ const netPurchases = totalPurch - totalRefunds; // refunds reduce COGS
+
+ const grossProfit = totalSales - netPurchases;
+
+ const expByCat = {};
+ expenses.forEach(e=>{ expByCat[e.category]=(expByCat[e.category]||0)+parseFloat(e.amount); });
+ const totalExp = expenses.reduce((s,e)=>s+parseFloat(e.amount),0);
+ const netIncome = grossProfit - totalExp;
+ const today = new Date().toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+ const isLoss = netIncome < 0;
+ document.getElementById('pl-content').innerHTML = `<div class="pl-letterhead"><div class="pl-company">Aura Apparel</div><div class="pl-doc-title">Profit & Loss Statement</div><div class="pl-period">For the period ending ${today}</div></div><div class="pl-section"><div class="pl-section-head">Revenue</div><div class="pl-line"><span>Sales Revenue</span><span class="amount-green">${fmt(totalSales)}</span></div><div class="pl-subtotal"><span>Total Revenue</span><span class="amount-green">${fmt(totalSales)}</span></div></div><div class="pl-section"><div class="pl-section-head">Cost of Goods Sold</div><div class="pl-line"><span>Purchases</span><span>${fmt(totalPurch)}</span></div>${totalRefunds>0?`<div class="pl-line"><span>Less: Purchase Returns</span><span class="amount-green">${fmt(totalRefunds)}</span></div>`:''}<div class="pl-subtotal"><span>Total Cost of Sales</span><span>${fmt(netPurchases)}</span></div></div><div class="pl-highlight"><span>Gross Profit</span><span class="${grossProfit>=0?'amount-green':'amount-red'}">${fmt(grossProfit)}</span></div><div class="pl-section"><div class="pl-section-head">Operating Expenses</div>${Object.entries(expByCat).map(([k,v])=>`<div class="pl-line"><span>${k}</span><span>${fmt(v)}</span></div>`).join('')||'<div class="pl-line"><span style="font-style:italic;color:#aaa">No expenses recorded</span><span>—</span></div>'}<div class="pl-subtotal"><span>Total Operating Expenses</span><span class="amount-red">${fmt(totalExp)}</span></div></div><div class="pl-net ${isLoss?'loss':''}"><span>Net ${isLoss?'Loss':'Income'}</span><span>${fmt(Math.abs(netIncome))}</span></div><div class="pl-footer">Generated by Aura OS · ${today}</div>`;
+}
+
+// Initialize Chart.js chart on dashboard
+document.addEventListener('DOMContentLoaded', function() {
+  const labels = {{ chart_labels_json|safe }};
+  const income = {{ chart_income_json|safe }};
+  const expenses = {{ chart_expenses_json|safe }};
+
+  new Chart(document.getElementById('accountingChart'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Income (₱)',
+          data: income,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        },
+        {
+          label: 'Expenses (₱)',
+          data: expenses,
+          backgroundColor: 'rgba(255, 99, 132, 0.6)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '₱' + value.toLocaleString();
+            }
+          }
+        }
+      }
+    }
+  });
+});
+
+(function init() {
+ const d = new Date();
+ const dateStr = d.toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+ document.getElementById('topbar-date').textContent = dateStr;
+ const tbDate = document.getElementById('tb-date');
+ if (tbDate) tbDate.textContent = d.toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+ renderDashboard();
+})();
+</script>
+</body>
+</html>

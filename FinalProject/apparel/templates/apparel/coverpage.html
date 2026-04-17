@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aura OS — Apparel Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{ font-family:'Inter',sans-serif; background:#f5f3ef; color:#333; }
+
+/* NAVBAR */
+.navbar{ position:sticky; top:0; z-index:100; background:rgba(245,243,239,0.95); backdrop-filter:blur(8px); border-bottom:1px solid #e8e4dc; padding:0 80px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+.nav-logo{ font-family:'Playfair Display',serif; font-size:20px; font-weight:700; letter-spacing:1px; color:#1a1a1a; }
+.nav-links{ display:flex; align-items:center; gap:32px; }
+.nav-links a{ text-decoration:none; color:#666; font-size:14px; font-weight:500; transition:0.2s; }
+.nav-links a:hover{ color:#111; }
+.nav-login{ padding:9px 22px; background:#1a1a1a; color:white !important; border-radius:8px; font-size:14px; font-weight:500; }
+.nav-login:hover{ background:#333 !important; }
+
+/* HERO */
+.hero{ min-height:92vh; display:flex; align-items:center; padding:0 80px; gap:60px; }
+.hero-left{ flex:1; max-width:560px; }
+.hero-tag{ display:inline-block; padding:6px 14px; background:#e8e4dc; border-radius:20px; font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#666; margin-bottom:24px; }
+.hero-left h1{ font-family:'Playfair Display',serif; font-size:56px; line-height:1.15; color:#1a1a1a; margin-bottom:20px; }
+.hero-left h1 em{ font-style:italic; color:#888; }
+.hero-left p{ font-size:16px; color:#666; line-height:1.7; margin-bottom:36px; max-width:460px; }
+.hero-buttons{ display:flex; gap:12px; flex-wrap:wrap; }
+.btn-primary{ padding:14px 28px; background:#1a1a1a; color:white; border-radius:8px; text-decoration:none; font-size:14px; font-weight:500; transition:0.2s; }
+.btn-primary:hover{ background:#333; }
+.btn-outline{ padding:14px 28px; border:1px solid #ccc; color:#333; border-radius:8px; text-decoration:none; font-size:14px; font-weight:500; transition:0.2s; }
+.btn-outline:hover{ border-color:#111; background:#f0ede8; }
+
+.hero-right{ flex:1; display:grid; grid-template-columns:1fr 1fr; gap:14px; max-width:480px; }
+.hero-card{ background:white; border-radius:14px; border:1px solid #e8e4dc; padding:22px; }
+.hero-card .card-icon{ font-size:24px; margin-bottom:10px; }
+.hero-card .card-label{ font-size:12px; color:#aaa; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; }
+.hero-card .card-value{ font-size:22px; font-weight:700; color:#1a1a1a; }
+.hero-card .card-sub{ font-size:12px; color:#aaa; margin-top:3px; }
+.hero-card.accent{ background:#1a1a1a; border-color:#1a1a1a; }
+.hero-card.accent .card-label{ color:#666; }
+.hero-card.accent .card-value{ color:white; }
+.hero-card.accent .card-sub{ color:#666; }
+
+/* DIVIDER */
+.divider{ padding:0 80px; }
+.divider hr{ border:none; border-top:1px solid #e8e4dc; }
+
+/* FEATURES */
+.features{ padding:100px 80px; }
+.section-tag{ font-size:12px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#aaa; margin-bottom:16px; }
+.features h2{ font-family:'Playfair Display',serif; font-size:40px; color:#1a1a1a; margin-bottom:12px; }
+.features .section-sub{ font-size:16px; color:#888; margin-bottom:56px; max-width:500px; line-height:1.6; }
+.feature-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.feature-card{ background:white; border-radius:14px; border:1px solid #e8e4dc; padding:30px; transition:0.2s; }
+.feature-card:hover{ border-color:#ccc; transform:translateY(-3px); }
+.feature-icon{ width:44px; height:44px; border-radius:10px; background:#f5f3ef; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:18px; }
+.feature-card h3{ font-size:16px; font-weight:600; margin-bottom:10px; color:#1a1a1a; }
+.feature-card p{ font-size:14px; color:#777; line-height:1.6; }
+
+/* ROLES */
+.roles{ padding:100px 80px; background:white; border-top:1px solid #e8e4dc; border-bottom:1px solid #e8e4dc; }
+.roles h2{ font-family:'Playfair Display',serif; font-size:40px; color:#1a1a1a; margin-bottom:12px; }
+.roles .section-sub{ font-size:16px; color:#888; margin-bottom:56px; line-height:1.6; }
+.roles-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.role-card{ border-radius:12px; border:1px solid #e8e4dc; padding:24px; }
+.role-name{ font-size:15px; font-weight:600; margin-bottom:8px; color:#1a1a1a; }
+.role-desc{ font-size:13px; color:#888; line-height:1.5; margin-bottom:14px; }
+.role-access{ display:flex; flex-direction:column; gap:5px; }
+.role-access span{ font-size:12px; color:#555; display:flex; align-items:center; gap:5px; }
+.role-access span::before{ content:'✓'; color:#1a1a1a; font-weight:700; }
+
+/* CTA */
+.cta{ padding:100px 80px; text-align:center; }
+.cta h2{ font-family:'Playfair Display',serif; font-size:44px; color:#1a1a1a; margin-bottom:16px; }
+.cta p{ font-size:16px; color:#888; margin-bottom:36px; line-height:1.6; }
+
+/* FOOTER */
+.footer{ background:#1a1a1a; color:#666; padding:32px 80px; display:flex; justify-content:space-between; align-items:center; font-size:13px; }
+.footer-logo{ font-family:'Playfair Display',serif; color:white; font-size:16px; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-logo">AURA OS</div>
+  <div class="nav-links">
+    <a href="#">Home</a>
+    <a href="#features">Features</a>
+    <a href="#roles">Roles</a>
+    <a href="{% url 'login' %}" class="nav-login">Login to System</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">Aura Operations System</div>
+    <h1>Manage Your Apparel Business <em>Smarter</em></h1>
+    <p>A complete management system for Aura Apparel — track products, manage suppliers, record sales, monitor purchases, and manage your team all in one place.</p>
+    <div class="hero-buttons">
+      <a href="{% url 'login' %}" class="btn-primary">Login to System</a>
+      <a href="#features" class="btn-outline">Explore Features</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-card">
+      <div class="card-icon">🧾</div>
+      <div class="card-label">Sales Orders</div>
+      <div class="card-value">Tracked</div>
+      <div class="card-sub">Walk-in & Online</div>
+    </div>
+    <div class="hero-card accent">
+      <div class="card-icon">📦</div>
+      <div class="card-label">Purchase Orders</div>
+      <div class="card-value">Managed</div>
+      <div class="card-sub">Per supplier</div>
+    </div>
+    <div class="hero-card accent">
+      <div class="card-icon">👥</div>
+      <div class="card-label">Employees</div>
+      <div class="card-value">Role-based</div>
+      <div class="card-sub">Access control</div>
+    </div>
+    <div class="hero-card">
+      <div class="card-icon">🏷️</div>
+      <div class="card-label">Products</div>
+      <div class="card-value">Organized</div>
+      <div class="card-sub">By category & brand</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><hr></div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-tag">What it does</div>
+  <h2>Everything You Need</h2>
+  <p class="section-sub">From managing products to tracking every sale and purchase, Aura OS covers all operations of your apparel business.</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">👕</div>
+      <h3>Product Management</h3>
+      <p>Organize apparel by category, brand, size, color, and material. Set unit costs with automatic 5% markup for selling price.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Sales Orders</h3>
+      <p>Record walk-in and online transactions. Accept cash, card, or e-wallet payments. Apply item and order-level discounts.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚚</div>
+      <h3>Purchase Orders</h3>
+      <p>Create purchase orders per supplier. Add multiple products, apply discounts, and track order status from pending to received.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏭</div>
+      <h3>Supplier Management</h3>
+      <p>Maintain supplier records and link brands to suppliers. Filter products by supplier when creating purchase orders.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">👤</div>
+      <h3>Customer Records</h3>
+      <p>Track customer details and view their complete sales history. All transactions are automatically linked to the customer.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔐</div>
+      <h3>Role-Based Access</h3>
+      <p>Each employee only sees what they need. Admins get full access while staff see only their relevant sections.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ROLES -->
+<section class="roles" id="roles">
+  <div class="section-tag">Who uses it</div>
+  <h2>Built for Your Team</h2>
+  <p class="section-sub">Each role has its own access — no one sees more than they need to.</p>
+  <div class="roles-grid">
+    <div class="role-card">
+      <div class="role-name">Sales Manager</div>
+      <div class="role-desc">Full access to all sections of the system.</div>
+      <div class="role-access">
+        <span>All sections</span>
+        <span>Employee management</span>
+        <span>Full reports</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-name">Purchasing Staff</div>
+      <div class="role-desc">Manages product sourcing and supplier orders.</div>
+      <div class="role-access">
+        <span>Products</span>
+        <span>Suppliers</span>
+        <span>Purchase Orders</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-name">Inventory Clerk</div>
+      <div class="role-desc">Tracks stock and manages incoming shipments.</div>
+      <div class="role-access">
+        <span>Inventory</span>
+        <span>Purchase Orders</span>
+        <span>Shipping Details</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-name">Sales / Cashier</div>
+      <div class="role-desc">Handles customer transactions at the counter.</div>
+      <div class="role-access">
+        <span>Products</span>
+        <span>Sales Orders</span>
+        <span>Customers</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>Ready to Get Started?</h2>
+  <p>Log in with your employee credentials to access your dashboard.</p>
+  <a href="{% url 'login' %}" class="btn-primary">Login to Aura OS</a>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-logo">AURA OS</div>
+  <div>© 2026 Aura Apparel Operations System. All rights reserved.</div>
+</footer>
+
+</body>
+</html>

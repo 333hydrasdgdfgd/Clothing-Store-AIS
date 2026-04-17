@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create Sales Order</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:'Inter',sans-serif; background:#f5f3ef; padding:40px; color:#333; }
+.container{ max-width:1100px; margin:auto; }
+.back{ text-decoration:none; color:#666; font-size:14px; display:inline-flex; align-items:center; gap:5px; margin-bottom:20px; }
+.back:hover{ color:#111; }
+.page-title{ font-family:'Playfair Display',serif; font-size:36px; margin-bottom:5px; }
+.subtitle{ color:#888; margin-bottom:30px; font-size:14px; }
+.card{ background:white; padding:30px; border-radius:14px; border:1px solid #e8e4dc; margin-bottom:20px; }
+.section-title{ font-weight:600; margin-bottom:20px; font-size:16px; }
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; column-gap:24px; row-gap:20px; }
+.full{ grid-column:1/-1; }
+label{ font-size:13px; font-weight:500; display:block; margin-bottom:6px; color:#555; }
+input,select{ width:100%; padding:11px 12px; border-radius:8px; border:1px solid #ddd; font-size:14px; transition:0.2s; background:white; }
+input:focus,select:focus{ outline:none; border-color:#111; box-shadow:0 0 0 2px rgba(0,0,0,0.05); }
+input[readonly]{ background:#f7f7f7; color:#555; cursor:not-allowed; }
+.employee-info{ background:#f5f3ef; border:1px solid #e8e4dc; border-radius:8px; padding:11px 14px; font-size:14px; color:#555; }
+.price-wrap{ position:relative; }
+.price-wrap .symbol{ position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#888; font-size:14px; pointer-events:none; }
+.price-wrap input{ padding-left:22px; }
+.product-row{ background:#faf9f7; border:1px solid #f0ede8; border-radius:10px; padding:18px; margin-bottom:12px; }
+.row-grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.row-grid-7 {
+  display:grid;
+  grid-template-columns:1.5fr 1.5fr 0.7fr 1.2fr 1.2fr 0.7fr 0.5fr;
+  gap:10px;
+  align-items:end;
+}
+.row-label{ font-size:12px; font-weight:500; color:#666; margin-bottom:5px; }
+.remove-btn{ background:none; border:1px solid #ddd; border-radius:8px; padding:10px; cursor:pointer; color:#dc2626; font-size:13px; transition:0.2s; width:100%; }
+.remove-btn:hover{ background:#fee2e2; border-color:#dc2626; }
+.add-product-btn{ display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:10px 16px; border:1px dashed #aaa; border-radius:8px; background:none; cursor:pointer; font-size:14px; color:#555; font-family:'Inter',sans-serif; transition:0.2s; }
+.add-product-btn:hover{ border-color:#111; color:#111; background:#f9f9f9; }
+.divider{ border:none; border-top:1px solid #f0ede8; margin:20px 0; }
+.discount-note{ font-size:12px; color:#aaa; margin-top:5px; }
+.actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:24px; }
+.cancel{ padding:10px 18px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; text-decoration:none; color:#333; display:inline-flex; align-items:center; }
+.save{ padding:10px 22px; border:none; border-radius:8px; background:#111; color:white; cursor:pointer; font-size:14px; font-weight:500; }
+.save:hover{ background:#333; }
+#shipping-section{ display:none; }
+#shipping-section.visible{ display:block; }
+.shipping-notice{ display:flex; align-items:center; gap:10px; background:#ede9fe; border:1px solid #c4b5fd; border-radius:8px; padding:12px 16px; margin-bottom:20px; font-size:13px; color:#5b21b6; }
+.new-customer-btn{ display:inline-flex; align-items:center; padding:10px 14px; background:#f5f3ef; border:1px solid #ddd; border-radius:8px; font-size:13px; font-weight:500; color:#333; text-decoration:none; white-space:nowrap; transition:0.2s; }
+.new-customer-btn:hover{ background:#111; color:white; border-color:#111; }
+.new-price:focus {
+  border-color: #16a34a;
+  background: #f0fdf4;
+}
+.override-price {
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<a href="{% url 'sales_orders' %}" class="back">← Back to Sales Orders</a>
+<h1 class="page-title">Create Sales Order</h1>
+<p class="subtitle">Record a new customer sale transaction.</p>
+
+<form method="post">
+{% csrf_token %}
+
+<div class="card">
+  <div class="section-title">Order Information</div>
+  <div class="form-grid">
+    <div>
+      <label>Customer</label>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+        <select name="customer" id="customer-select" required style="flex:1;margin-bottom:0;">
+          <option value="">Select Customer</option>
+          {% for c in customers %}
+          <option value="{{ c.id }}" data-fullname="{{ c.full_name }}" data-phone="{{ c.phone|default:'' }}" data-address="{{ c.address|default:'' }}">{{ c.full_name }}</option>
+          {% endfor %}
+        </select>
+        <a href="{% url 'customer_create' %}?next={{ request.path }}" class="new-customer-btn" title="Add a new customer">+ New</a>
+      </div>
+    </div>
+    <div>
+      <label>Processed By</label>
+      <div class="employee-info">{{ employee_name }} <span style="color:#aaa;font-size:12px;">(logged in)</span></div>
+      <input type="hidden" name="employee" value="{{ employee_id }}">
+    </div>
+    <div>
+      <label>Type of Sale</label>
+      <select name="type_of_sale" id="type-of-sale" required onchange="toggleShipping()">
+        <option value="Walk-in">Walk-in</option>
+        <option value="Online">Online</option>
+      </select>
+    </div>
+    <div>
+      <label>Payment Method</label>
+      <select name="payment_method" required>
+        <option value="Cash">Cash</option>
+        <option value="Card">Card</option>
+        <option value="E-wallet">E-wallet</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="shipping-section">
+  <div class="section-title">Shipping Details</div>
+  <div class="form-grid">
+    <div>
+      <label>Recipient Name</label>
+      <input type="text" name="recipient_name" id="recipient-name" placeholder="e.g. Maria Santos">
+    </div>
+    <div>
+      <label>Contact Number</label>
+      <input type="text" name="contact_number" id="contact-number" placeholder="e.g. 0917-123-4567">
+    </div>
+    <div class="full">
+      <label>Shipping Address</label>
+      <input type="text" name="shipping_address" id="shipping-address" placeholder="e.g. 123 Rizal St, Bacolod City">
+    </div>
+    <div>
+      <label>Shipping Method</label>
+      <select name="shipping_method">
+        <option value="LBC">LBC</option>
+        <option value="J&T">J&T Express</option>
+        <option value="Ninja Van">Ninja Van</option>
+        <option value="GrabExpress">GrabExpress</option>
+        <option value="Lalamove">Lalamove</option>
+        <option value="Flash Express">Flash Express</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="price-wrap">
+      <label>Shipping Fee</label>
+      <span class="symbol">₱</span>
+      <input type="number" step="0.01" min="0" name="shipping_fee" placeholder="0.00" value="0">
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title">Product Details</div>
+  <div id="product-rows">
+    <!-- First product row -->
+    <div class="product-row">
+      <div class="row-grid-2">
+        <div>
+          <div class="row-label">Category</div>
+          <select class="category-select">
+            <option value="">-- Select Category --</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.category_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <div class="row-label">Product</div>
+          <select name="product[]" class="product-select" required>
+            <option value="">-- Select Product --</option>
+          </select>
+        </div>
+      </div>
+      <div class="row-grid-7">
+        <div>
+          <div class="row-label">Color</div>
+          <select name="color_id[]" class="color-select">
+            <option value="">-- N/A --</option>
+          </select>
+        </div>
+        <div>
+          <div class="row-label">Size</div>
+          <select name="size_id[]" class="size-select">
+            <option value="">-- N/A --</option>
+          </select>
+        </div>
+        <div>
+          <div class="row-label">Qty</div>
+          <input type="number" name="quantity[]" min="1" placeholder="0" required>
+        </div>
+        <div class="price-wrap">
+          <div class="row-label">Unit Price (₱)</div>
+          <span class="symbol">₱</span>
+          <input type="number" step="0.01" name="unit_price[]" placeholder="0.00" class="unit-price-display" readonly>
+        </div>
+        <div>
+          <div class="row-label">Override (₱)</div>
+          <input type="number" step="0.01" name="new_price[]" placeholder="Optional" class="new-price override-price">
+        </div>
+        <div>
+          <div class="row-label">Disc %</div>
+          <input type="number" step="0.01" min="0" max="100" name="sd_discount[]" placeholder="0" value="0">
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button type="button" class="remove-btn" style="visibility:hidden;">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="add-product-btn" id="add-product-btn">+ Add Another Product</button>
+
+  <hr class="divider">
+
+  <div style="max-width:300px;">
+    <label>Order Discount (%)</label>
+    <input type="number" step="0.01" min="0" max="100" name="discount" placeholder="0.00" value="0">
+    <p class="discount-note">Applied to the total after item discounts.</p>
+  </div>
+
+  <div class="actions">
+    <a href="{% url 'sales_orders' %}" class="cancel">Cancel</a>
+    <button type="submit" class="save">💾 Save Sales Order</button>
+  </div>
+</div>
+
+</form>
+</div>
+
+<script>
+function toggleShipping() {
+  const type = document.getElementById('type-of-sale').value;
+  const section = document.getElementById('shipping-section');
+  if (type === 'Online') { section.classList.add('visible'); autoFillShipping(); }
+  else { section.classList.remove('visible'); }
+}
+
+document.getElementById('customer-select').addEventListener('change', function() {
+  if (document.getElementById('type-of-sale').value === 'Online') autoFillShipping();
+});
+
+function autoFillShipping() {
+  const sel = document.getElementById('customer-select');
+  const opt = sel.selectedOptions[0];
+  if (!opt || !opt.value) return;
+  document.getElementById('recipient-name').value = opt.dataset.fullname || '';
+  document.getElementById('contact-number').value = opt.dataset.phone || '';
+  document.getElementById('shipping-address').value = opt.dataset.address || '';
+}
+
+// Bind category change handler to a product row
+function bindCategoryChange(row) {
+  const catSel = row.querySelector('.category-select');
+  const prodSel = row.querySelector('.product-select');
+  const colorSel = row.querySelector('.color-select');
+  const sizeSel = row.querySelector('.size-select');
+  const priceBox = row.querySelector('.unit-price-display');
+  const overrideBox = row.querySelector('.new-price');
+
+  catSel.addEventListener('change', function () {
+    const catId = this.value;
+    prodSel.innerHTML = '<option value="">-- Select Product --</option>';
+    colorSel.innerHTML = '<option value="">-- N/A --</option>';
+    sizeSel.innerHTML = '<option value="">-- N/A --</option>';
+    if (priceBox) priceBox.value = '';
+    if (overrideBox) overrideBox.value = '';
+
+    if (!catId) return;
+
+    // Fetch products for this category
+    fetch(`/get-products-by-category/${catId}/`)
+      .then(r => r.json())
+      .then(data => {
+        data.products.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.text = p.product_name;
+          opt.dataset.price = p.selling_price;
+          opt.dataset.colors = JSON.stringify(p.colors || []);
+          opt.dataset.sizes = JSON.stringify(p.sizes || []);
+          prodSel.appendChild(opt);
+        });
+      })
+      .catch(err => console.error('Error fetching products:', err));
+  });
+
+  prodSel.addEventListener('change', function () {
+    const selected = this.options[this.selectedIndex];
+    colorSel.innerHTML = '<option value="">-- N/A --</option>';
+    sizeSel.innerHTML = '<option value="">-- N/A --</option>';
+
+    if (selected && selected.value) {
+      // Set price
+      if (selected.dataset.price && priceBox) {
+        priceBox.value = parseFloat(selected.dataset.price).toFixed(2);
+      }
+
+      // Populate colors
+      try {
+        const colors = JSON.parse(selected.dataset.colors || '[]');
+        colors.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.text = c.name;
+          colorSel.appendChild(opt);
+        });
+      } catch(e) {}
+
+      // Populate sizes
+      try {
+        const sizes = JSON.parse(selected.dataset.sizes || '[]');
+        sizes.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.text = s.name;
+          sizeSel.appendChild(opt);
+        });
+      } catch(e) {}
+    }
+  });
+}
+
+// Add new product row
+document.getElementById('add-product-btn').addEventListener('click', function () {
+  const firstRow = document.querySelector('.product-row');
+  const newRow = firstRow.cloneNode(true);
+
+  // Reset all inputs and selects in the cloned row
+  newRow.querySelectorAll('select').forEach(el => {
+    if (el.classList.contains('category-select')) {
+      el.selectedIndex = 0;
+    } else {
+      el.innerHTML = el.classList.contains('product-select')
+        ? '<option value="">-- Select Product --</option>'
+        : '<option value="">-- N/A --</option>';
+    }
+  });
+
+  newRow.querySelectorAll('input').forEach(el => {
+    if (el.name === 'sd_discount[]') {
+      el.value = '0';
+    } else {
+      el.value = '';
+    }
+  });
+
+  // Show remove button on new rows
+  const removeBtn = newRow.querySelector('.remove-btn');
+  if (removeBtn) {
+    removeBtn.style.visibility = 'visible';
+    removeBtn.onclick = function() {
+      newRow.remove();
+    };
+  }
+
+  document.getElementById('product-rows').appendChild(newRow);
+  bindCategoryChange(newRow);
+});
+
+// Bind the first row on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const firstRow = document.querySelector('.product-row');
+  if (firstRow) {
+    bindCategoryChange(firstRow);
+  }
+});
+</script>
+</body>
+</html>

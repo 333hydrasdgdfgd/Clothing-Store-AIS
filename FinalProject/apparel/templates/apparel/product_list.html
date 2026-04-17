@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Product List</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:'Inter',sans-serif; background:#f5f3ef; padding:40px; color:#333; }
+.container{ max-width:1200px; margin:auto; }
+.back-link{ text-decoration:none; color:#666; font-size:14px; margin-bottom:20px; display:inline-block; }
+.back-link:hover{ text-decoration:underline; }
+.page-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px; }
+.page-header-left h1{ font-family:'Playfair Display',serif; font-size:36px; margin-bottom:4px; }
+.page-header-left p{ color:#888; font-size:14px; }
+.page-header-right{ display:flex; align-items:center; gap:12px; }
+.search-box{ display:flex; align-items:center; background:white; border:1px solid #ddd; border-radius:8px; padding:8px 14px; gap:8px; }
+.search-box input{ border:none; outline:none; font-size:14px; width:200px; background:transparent; }
+.add-btn{ text-decoration:none; padding:11px 20px; background:#111; color:white; border-radius:8px; font-size:14px; font-weight:500; white-space:nowrap; }
+.add-btn:hover{ background:#333; }
+.table-card{ background:white; border-radius:14px; border:1px solid #e8e4dc; overflow:hidden; }
+table{ width:100%; border-collapse:collapse; }
+th{ padding:14px 16px; text-align:left; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#888; border-bottom:1px solid #eee; }
+td{ padding:14px 16px; font-size:13px; border-bottom:1px solid #f0ede8; vertical-align:middle; }
+tr:last-child td{ border-bottom:none; }
+tr:hover td{ background:#faf9f7; }
+.product-code{ font-family:monospace; font-size:12px; color:#888; background:#f5f3ef; padding:3px 7px; border-radius:5px; }
+.product-name{ font-weight:600; font-size:14px; }
+/* Category color badges */
+.category-badge{ padding:3px 9px; border-radius:20px; font-size:11px; font-weight:500; display:inline-block; }
+.cat-activewear{ background:#dbeafe; color:#1e40af; }
+.cat-tops{ background:#fce7f3; color:#9d174d; }
+.cat-bottoms{ background:#d1fae5; color:#065f46; }
+.cat-outerwear{ background:#fef3c7; color:#92400e; }
+.cat-dresses{ background:#ede9fe; color:#5b21b6; }
+.cat-innerwear{ background:#fee2e2; color:#991b1b; }
+.cat-accessories{ background:#f0fdf4; color:#166534; }
+.cat-footwear{ background:#fff7ed; color:#c2410c; }
+.cat-default{ background:#f0ede8; color:#555; }
+.tags{ display:flex; flex-wrap:wrap; gap:4px; }
+.tag{ padding:2px 8px; border-radius:4px; font-size:11px; font-weight:500; background:#ede9fe; color:#5b21b6; display:inline-block; }
+.tag.color{ background:#fce7f3; color:#9d174d; }
+.price{ font-weight:700; }
+.actions a{ text-decoration:none; font-size:13px; margin-right:10px; }
+.edit-link{ color:#2563eb; }
+.delete-link{ color:#dc2626; }
+.edit-link:hover,.delete-link:hover{ text-decoration:underline; }
+.empty{ text-align:center; color:#aaa; padding:40px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="{% url 'dashboard' %}" class="back-link">← Back to Dashboard</a>
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Products</h1>
+      <p>Manage your apparel product catalog.</p>
+    </div>
+    <div class="page-header-right">
+      <form method="get">
+        <div class="search-box">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" name="q" placeholder="Search product..." value="{{ query|default:'' }}">
+        </div>
+      </form>
+      <a href="{% url 'product_create' %}" class="add-btn">+ Add Product</a>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table>
+      <tr>
+        <th>Product Code</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Brand</th>
+        <th>Sizes</th>
+        <th>Colors</th>
+        <th>Unit Cost</th>
+        <th>Selling Price</th>
+        <th>Action</th>
+      </tr>
+      {% for p in products %}
+      <tr>
+        <td><span class="product-code">{{ p.product_code }}</span></td>
+        <td><span class="product-name">{{ p.product_name }}</span></td>
+        <td><span class="category-badge cat-{{ p.category.category_name|lower|cut:' '|cut:'/'|cut:'&' }}{% if not p.category.category_name %} cat-default{% endif %}">{{ p.category.category_name }}</span></td>
+        <td>{{ p.brand.brand_name }}</td>
+        <td>
+          <div class="tags">
+            {% for s in p.sizes.all %}
+            <span class="tag">{{ s.size_name }}</span>
+            {% empty %}
+            <span style="color:#aaa;font-size:12px;">—</span>
+            {% endfor %}
+          </div>
+        </td>
+        <td>
+          <div class="tags">
+            {% for c in p.colors.all %}
+            <span class="tag color">{{ c.color_name }}</span>
+            {% empty %}
+            <span style="color:#aaa;font-size:12px;">—</span>
+            {% endfor %}
+          </div>
+        </td>
+        <td>₱{{ p.unit_cost }}</td>
+        <td><span class="price">₱{{ p.selling_price }}</span></td>
+        <td class="actions">
+          <a href="{% url 'product_update' p.id %}" class="edit-link">✏ Edit</a>
+          <a href="{% url 'product_delete' p.id %}" class="delete-link" onclick="return confirm('Delete this product?');">🗑 Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9" class="empty">No products found.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <a href="{% url 'dashboard' %}" class="back-link" style="display:none;">← Back to Dashboard</a>
+</div>
+</body>
+</html>

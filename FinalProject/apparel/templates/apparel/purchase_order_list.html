@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Purchase Orders</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:'Inter',sans-serif; background:#f5f3ef; padding:40px; color:#333; }
+.container{ max-width:1100px; margin:auto; }
+
+.page-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px; }
+.page-header-left h1{ font-family:'Playfair Display',serif; font-size:36px; margin-bottom:4px; }
+.page-header-left p{ color:#888; font-size:14px; }
+.page-header-right{ display:flex; align-items:center; gap:12px; }
+
+.search-box{ display:flex; align-items:center; background:white; border:1px solid #ddd; border-radius:8px; padding:8px 14px; gap:8px; }
+.search-box input{ border:none; outline:none; font-size:14px; width:200px; background:transparent; }
+.search-box svg{ color:#aaa; }
+
+.create-btn{ text-decoration:none; padding:11px 20px; background:#111; color:white; border-radius:8px; font-size:14px; font-weight:500; white-space:nowrap; }
+.create-btn:hover{ background:#333; }
+
+.table-card{ background:white; border-radius:14px; border:1px solid #e8e4dc; overflow:hidden; }
+
+table{ width:100%; border-collapse:collapse; }
+th{ padding:14px 20px; text-align:left; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#888; border-bottom:1px solid #eee; background:white; }
+td{ padding:18px 20px; text-align:left; font-size:14px; border-bottom:1px solid #f0ede8; }
+tr:last-child td{ border-bottom:none; }
+tr:hover td{ background:#faf9f7; }
+
+.po-id{ font-weight:600; font-size:13px; }
+.supplier-name{ font-weight:500; }
+.total-cost{ font-weight:700; }
+
+.status-badge{ padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; display:inline-block; }
+.status-pending{ background:#fef3c7; color:#92400e; }
+.status-received{ background:#d1fae5; color:#065f46; }
+.status-cancelled{ background:#fee2e2; color:#991b1b; }
+.status-delivered{ background:#d1fae5; color:#065f46; }
+.status-processing{ background:#dbeafe; color:#1e40af; }
+
+.view-link{ text-decoration:none; color:#888; font-size:13px; display:flex; align-items:center; gap:5px; }
+.view-link:hover{ color:#111; }
+
+.empty{ text-align:center; color:#aaa; padding:40px; font-size:14px; }
+.back-link{ text-decoration:none; color:#666; font-size:14px; margin-top:20px; display:inline-block; }
+.back-link:hover{ text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Purchase Orders</h1>
+      <p>Manage inventory purchases and supplier orders.</p>
+    </div>
+    <div class="page-header-right">
+      <div class="search-box">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search PO ID or Supplier...">
+      </div>
+      <a href="{% url 'create_purchase_order' %}" class="create-btn">+ Create PO</a>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table>
+      <tr>
+        <th>PO ID</th>
+        <th>Supplier</th>
+        <th>Order Date</th>
+        <th>Expected Delivery</th>
+        <th>Discount</th>
+        <th>Total Cost</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+
+      {% for po in purchase_orders %}
+      <tr>
+        <td><span class="po-id">PO-{{ po.purchase_order_id }}</span></td>
+        <td><span class="supplier-name">{{ po.supplier.supplier_name }}</span></td>
+        <td>{{ po.order_date }}</td>
+        <td>{{ po.expected_delivery_date }}</td>
+        <td>{{ po.po_discount }}%</td>
+        <td><span class="total-cost">₱{{ po.total_cost }}</span></td>
+        <td>
+          <span class="status-badge status-{{ po.status|lower }}">{{ po.status }}</span>
+        </td>
+        <td>
+          <a class="view-link" href="{% url 'purchase_order_details' po.purchase_order_id %}">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            View
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="empty">No purchase orders found.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <a href="{% url 'dashboard' %}" class="back-link">← Back to Dashboard</a>
+</div>
+</body>
+</html>

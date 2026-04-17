@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create Purchase Order</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:'Inter',sans-serif; background:#f5f3ef; padding:40px; color:#333; }
+.container{ max-width:900px; margin:auto; }
+.back{ text-decoration:none; color:#666; font-size:14px; display:inline-flex; align-items:center; gap:5px; margin-bottom:20px; }
+.back:hover{ color:#111; }
+.page-title{ font-family:'Playfair Display',serif; font-size:36px; margin-bottom:5px; }
+.subtitle{ color:#888; margin-bottom:30px; font-size:14px; }
+.card{ background:white; padding:30px; border-radius:14px; border:1px solid #e8e4dc; margin-bottom:20px; }
+.section-title{ font-weight:600; margin-bottom:20px; font-size:16px; }
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; column-gap:24px; row-gap:20px; }
+.full{ grid-column:1/-1; }
+label{ font-size:13px; font-weight:500; display:block; margin-bottom:6px; color:#555; }
+input, select{ width:100%; padding:11px 12px; border-radius:8px; border:1px solid #ddd; font-size:14px; transition:0.2s; background:white; }
+input:focus, select:focus{ outline:none; border-color:#111; box-shadow:0 0 0 2px rgba(0,0,0,0.05); }
+.employee-info{ background:#f5f3ef; border:1px solid #e8e4dc; border-radius:8px; padding:11px 12px; font-size:14px; color:#555; }
+.price-wrap{ position:relative; }
+.price-wrap span.symbol{ position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#888; font-size:14px; pointer-events:none; }
+.price-wrap input{ padding-left:22px; }
+.product-row{ display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:12px; align-items:end; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #f0ede8; }
+.product-row:last-child{ border-bottom:none; margin-bottom:0; padding-bottom:0; }
+.remove-btn{ background:none; border:1px solid #ddd; border-radius:8px; padding:10px 12px; cursor:pointer; color:#dc2626; font-size:14px; transition:0.2s; }
+.remove-btn:hover{ background:#fee2e2; border-color:#dc2626; }
+.add-product-btn{ display:inline-flex; align-items:center; gap:6px; margin-top:16px; padding:10px 16px; border:1px dashed #aaa; border-radius:8px; background:none; cursor:pointer; font-size:14px; color:#555; font-family:'Inter',sans-serif; transition:0.2s; }
+.add-product-btn:hover{ border-color:#111; color:#111; background:#f9f9f9; }
+.add-product-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+.divider{ border:none; border-top:1px solid #f0ede8; margin:20px 0; }
+.discount-note{ font-size:12px; color:#aaa; margin-top:5px; }
+.actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:24px; }
+.cancel{ padding:10px 18px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; text-decoration:none; color:#333; display:inline-flex; align-items:center; }
+.cancel:hover{ background:#f9f9f9; }
+.save{ padding:10px 22px; border:none; border-radius:8px; background:#111; color:white; cursor:pointer; font-size:14px; font-weight:500; display:inline-flex; align-items:center; gap:6px; }
+.save:hover{ background:#333; }
+.row-label{ font-size:13px; font-weight:500; color:#555; margin-bottom:6px; }
+.no-products{ font-size:13px; color:#aaa; padding:10px 0; font-style:italic; }
+
+/* Cost summary grid */
+.cost-summary-grid{ display:grid; grid-template-columns:1fr 1fr; column-gap:24px; row-gap:20px; }
+.freight-note{ font-size:12px; color:#aaa; margin-top:5px; }
+
+/* Order total preview */
+.total-preview{ background:#f5f3ef; border:1px solid #e8e4dc; border-radius:10px; padding:16px 20px; margin-top:20px; display:flex; justify-content:space-between; align-items:center; }
+.total-preview-label{ font-size:13px; color:#666; font-weight:500; }
+.total-preview-value{ font-size:20px; font-weight:800; color:#111; }
+.total-preview-breakdown{ font-size:12px; color:#aaa; margin-top:3px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <a href="{% url 'purchase_orders' %}" class="back">← Back to Purchase Orders</a>
+  <h1 class="page-title">Create Purchase Order</h1>
+  <p class="subtitle">Record a new inventory purchase from a supplier.</p>
+
+  <form method="post" action="{% url 'create_purchase_order' %}">
+    {% csrf_token %}
+    <!-- Hidden logged-in employee ID -->
+    <input type="hidden" name="employee" value="{{ user.employee.id }}">
+
+    <!-- Order Information -->
+    <div class="card">
+      <div class="section-title">Order Information</div>
+      <div class="form-grid">
+
+        <div>
+          <label>Supplier</label>
+          <select name="supplier" id="supplier-select" required>
+            <option value="">Select Supplier</option>
+            {% for supplier in suppliers %}
+            <option value="{{ supplier.id }}">{{ supplier.supplier_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label>Processed By</label>
+          <div class="employee-info">{{ user.employee.employee_name }} <span style="color:#aaa;font-size:12px;">(logged in)</span></div>
+        </div>
+
+        <div class="full">
+          <label>Expected Delivery Date</label>
+          <input type="date" name="expected_delivery" required>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Product Details -->
+    <div class="card">
+      <div class="section-title">Product Details</div>
+
+      <div id="product-list">
+        <div class="product-row" id="row-1">
+          <div>
+            <div class="row-label">Product</div>
+            <select name="product[]" class="product-select" required>
+              <option value="">— Select a supplier first —</option>
+            </select>
+          </div>
+          <div>
+            <div class="row-label">Quantity</div>
+            <input type="number" name="quantity[]" min="1" placeholder="0" required oninput="updateTotal()">
+          </div>
+          <div class="price-wrap">
+            <div class="row-label">Unit Cost</div>
+            <span class="symbol">₱</span>
+            <input type="number" step="0.01" name="cost[]" placeholder="0.00" required oninput="updateTotal()">
+          </div>
+          <div>
+            <div class="row-label" style="visibility:hidden;">Remove</div>
+            <button type="button" class="remove-btn" onclick="removeRow(this)" style="visibility:hidden;">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="add-product-btn" id="add-btn" onclick="addProductRow()" disabled>
+        + Add Another Product
+      </button>
+
+      <hr class="divider">
+
+      <!-- Cost Summary: Discount + Freight -->
+      <div class="cost-summary-grid">
+        <div>
+          <label>Discount (%)</label>
+          <input type="number" step="0.01" min="0" max="100" name="po_discount" id="po-discount" placeholder="0.00" value="0" oninput="updateTotal()">
+          <p class="discount-note">Enter 0 if no discount applies.</p>
+        </div>
+        <div>
+          <label>Freight / Shipping Cost</label>
+          <div class="price-wrap">
+            <span class="symbol">₱</span>
+            <input type="number" step="0.01" min="0" name="freight_cost" id="freight-cost" placeholder="0.00" value="0" oninput="updateTotal()">
+          </div>
+          <p class="freight-note">Manually enter any freight or delivery charges.</p>
+        </div>
+      </div>
+
+      <!-- Live total preview -->
+      <div class="total-preview">
+        <div>
+          <div class="total-preview-label">Estimated Order Total</div>
+          <div class="total-preview-breakdown" id="total-breakdown">subtotal — discount + freight</div>
+        </div>
+        <div class="total-preview-value" id="total-display">₱0.00</div>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'purchase_orders' %}" class="cancel">Cancel</a>
+        <button type="submit" class="save">💾 Save Purchase Order</button>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<script>
+var cachedProducts = [];
+
+function buildOptions(products) {
+  if (products.length === 0) {
+    return '<option value="">— No products for this supplier —</option>';
+  }
+  var opts = '<option value="">Select Product</option>';
+  products.forEach(function(p) {
+    opts += '<option value="' + p.id + '">' + p.product_name + ' (' + p.product_code + ')</option>';
+  });
+  return opts;
+}
+
+function refreshAllProductSelects() {
+  var selects = document.querySelectorAll('.product-select');
+  selects.forEach(function(sel) {
+    var currentVal = sel.value;
+    sel.innerHTML = buildOptions(cachedProducts);
+    sel.value = currentVal;
+  });
+}
+
+document.getElementById('supplier-select').addEventListener('change', function() {
+  var supplierId = this.value;
+  var addBtn = document.getElementById('add-btn');
+
+  if (!supplierId) {
+    cachedProducts = [];
+    refreshAllProductSelects();
+    addBtn.disabled = true;
+    return;
+  }
+
+  fetch('/get-products-by-supplier/' + supplierId + '/')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      cachedProducts = data.products;
+      refreshAllProductSelects();
+      addBtn.disabled = false;
+    });
+});
+
+var rowCount = 1;
+
+function addProductRow() {
+  rowCount++;
+  var list = document.getElementById('product-list');
+  var div = document.createElement('div');
+  div.className = 'product-row';
+  div.id = 'row-' + rowCount;
+  div.innerHTML =
+    '<div>' +
+      '<div class="row-label">Product</div>' +
+      '<select name="product[]" class="product-select" required>' + buildOptions(cachedProducts) + '</select>' +
+    '</div>' +
+    '<div>' +
+      '<div class="row-label">Quantity</div>' +
+      '<input type="number" name="quantity[]" min="1" placeholder="0" required oninput="updateTotal()">' +
+    '</div>' +
+    '<div class="price-wrap">' +
+      '<div class="row-label">Unit Cost</div>' +
+      '<span class="symbol">₱</span>' +
+      '<input type="number" step="0.01" name="cost[]" placeholder="0.00" required oninput="updateTotal()">' +
+    '</div>' +
+    '<div>' +
+      '<div class="row-label" style="visibility:hidden;">Remove</div>' +
+      '<button type="button" class="remove-btn" onclick="removeRow(this)">✕</button>' +
+    '</div>';
+  list.appendChild(div);
+}
+
+function removeRow(btn) {
+  btn.closest('.product-row').remove();
+  updateTotal();
+}
+
+function updateTotal() {
+  var quantities = document.querySelectorAll('input[name="quantity[]"]');
+  var costs = document.querySelectorAll('input[name="cost[]"]');
+
+  var subtotal = 0;
+  for (var i = 0; i < quantities.length; i++) {
+    var q = parseFloat(quantities[i].value) || 0;
+    var c = parseFloat(costs[i].value) || 0;
+    subtotal += q * c;
+  }
+
+  var discount = parseFloat(document.getElementById('po-discount').value) || 0;
+  var freight = parseFloat(document.getElementById('freight-cost').value) || 0;
+
+  var discountAmt = subtotal * (discount / 100);
+  var total = subtotal - discountAmt + freight;
+
+  document.getElementById('total-display').textContent = '₱' + total.toFixed(2);
+  document.getElementById('total-breakdown').textContent =
+    '₱' + subtotal.toFixed(2) + ' subtotal'
+    + (discount > 0 ? ' − ₱' + discountAmt.toFixed(2) + ' (' + discount + '% disc.)' : '')
+    + (freight > 0 ? ' + ₱' + freight.toFixed(2) + ' freight' : '');
+}
+</script>
+</body>
+</html>

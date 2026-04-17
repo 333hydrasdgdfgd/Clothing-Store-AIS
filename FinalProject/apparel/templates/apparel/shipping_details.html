@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shipping Details</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:'Inter',sans-serif; background:#f5f3ef; padding:40px; color:#333; }
+.container{ max-width:1200px; margin:auto; }
+.back-link{ text-decoration:none; color:#666; font-size:14px; margin-bottom:20px; display:inline-block; }
+.back-link:hover{ text-decoration:underline; }
+.page-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px; }
+.page-header-left h1{ font-family:'Playfair Display',serif; font-size:36px; margin-bottom:4px; }
+.page-header-left p{ color:#888; font-size:14px; }
+.page-header-right{ display:flex; align-items:center; gap:12px; }
+.search-box{ display:flex; align-items:center; background:white; border:1px solid #ddd; border-radius:8px; padding:8px 14px; gap:8px; }
+.search-box input{ border:none; outline:none; font-size:14px; width:200px; background:transparent; }
+.table-card{ background:white; border-radius:14px; border:1px solid #e8e4dc; overflow:hidden; }
+table{ width:100%; border-collapse:collapse; }
+th{ padding:14px 20px; text-align:left; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#888; border-bottom:1px solid #eee; }
+td{ padding:16px 20px; font-size:14px; border-bottom:1px solid #f0ede8; vertical-align:middle; }
+tr:last-child td{ border-bottom:none; }
+tr:hover td{ background:#faf9f7; }
+.ship-id{ font-family:monospace; font-size:12px; color:#888; background:#f5f3ef; padding:3px 7px; border-radius:5px; }
+.so-tag{ padding:3px 9px; border-radius:5px; font-size:11px; font-weight:600; background:#ede9fe; color:#5b21b6; text-decoration:none; }
+.so-tag:hover{ background:#ddd6fe; }
+.recipient{ font-weight:600; }
+.address{ color:#666; font-size:13px; max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* Status badges */
+.status-badge{ padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; display:inline-block; }
+.status-Pending{ background:#fef3c7; color:#92400e; }
+.status-Shipped{ background:#dbeafe; color:#1e40af; }
+.status-Delivered{ background:#d1fae5; color:#065f46; }
+
+/* Courier badges */
+.courier-badge{ padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; letter-spacing:0.04em; display:inline-block; }
+.courier-LBC{ background:#fef3c7; color:#92400e; }
+.courier-JT{ background:#fee2e2; color:#991b1b; }
+.courier-NinjaVan{ background:#ede9fe; color:#5b21b6; }
+.courier-GrabExpress{ background:#d1fae5; color:#065f46; }
+.courier-Lalamove{ background:#fff7ed; color:#c2410c; }
+.courier-FlashExpress{ background:#dbeafe; color:#1e40af; }
+.courier-Other{ background:#f0ede8; color:#555; }
+
+.fee{ font-weight:700; }
+.empty{ text-align:center; color:#aaa; padding:40px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <a href="{% url 'dashboard' %}" class="back-link">← Back to Dashboard</a>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Shipping Details</h1>
+      <p>Auto-generated from online sales orders.</p>
+    </div>
+    <div class="page-header-right">
+      <form method="get">
+        <div class="search-box">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" name="q" placeholder="Search recipient..." value="{{ query|default:'' }}">
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table>
+      <tr>
+        <th>Shipping ID</th>
+        <th>Sales Order</th>
+        <th>Recipient</th>
+        <th>Contact No.</th>
+        <th>Address</th>
+        <th>Method</th>
+        <th>Fee</th>
+        <th>Status</th>
+      </tr>
+      {% for s in shippings %}
+      <tr>
+        <td><span class="ship-id">SHIP-{{ s.shipping_id }}</span></td>
+        <td>
+          <a href="{% url 'sales_order_details' s.sales_order.sales_id %}" class="so-tag">
+            SO-{{ s.sales_order.sales_id }}
+          </a>
+        </td>
+        <td><span class="recipient">{{ s.recipient_name }}</span></td>
+        <td>{{ s.contact_number|default:"—" }}</td>
+        <td><span class="address" title="{{ s.shipping_address }}">{{ s.shipping_address }}</span></td>
+        <td>
+          <span class="courier-badge courier-{{ s.shipping_method|cut:' '|cut:'&' }}">
+            {{ s.shipping_method }}
+          </span>
+        </td>
+        <td><span class="fee">₱{{ s.shipping_fee }}</span></td>
+        <td>
+          <span class="status-badge status-{{ s.shipping_status }}">{{ s.shipping_status }}</span>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="empty">No shipping records found.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

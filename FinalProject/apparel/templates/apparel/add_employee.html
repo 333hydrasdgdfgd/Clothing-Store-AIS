@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add Employee</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:'Inter',sans-serif; background:#f5f3ef; padding:40px; color:#333; }
+.container{ max-width:900px; margin:auto; }
+.back{ text-decoration:none; color:#666; font-size:14px; display:inline-flex; align-items:center; gap:5px; margin-bottom:20px; }
+.back:hover{ color:#111; }
+.page-title{ font-family:'Playfair Display',serif; font-size:36px; margin-bottom:5px; }
+.subtitle{ color:#888; margin-bottom:30px; font-size:14px; }
+.card{ background:white; padding:30px; border-radius:14px; border:1px solid #e8e4dc; margin-bottom:20px; }
+.section-title{ font-weight:600; margin-bottom:20px; font-size:16px; }
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; column-gap:24px; row-gap:20px; }
+.full{ grid-column:1/-1; }
+label{ font-size:13px; font-weight:500; display:block; margin-bottom:6px; color:#555; }
+input,select{ width:100%; padding:11px 12px; border-radius:8px; border:1px solid #ddd; font-size:14px; transition:0.2s; background:white; }
+input:focus,select:focus{ outline:none; border-color:#111; box-shadow:0 0 0 2px rgba(0,0,0,0.05); }
+.hint{ font-size:12px; color:#aaa; margin-top:4px; }
+.add-another-btn{ display:inline-flex; align-items:center; gap:6px; margin-top:4px; padding:10px 16px; border:1px dashed #aaa; border-radius:8px; background:none; cursor:pointer; font-size:14px; color:#555; font-family:'Inter',sans-serif; transition:0.2s; }
+.add-another-btn:hover{ border-color:#111; color:#111; background:#f9f9f9; }
+.actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:24px; }
+.cancel{ padding:10px 18px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:14px; text-decoration:none; color:#333; display:inline-flex; align-items:center; }
+.save{ padding:10px 22px; border:none; border-radius:8px; background:#111; color:white; cursor:pointer; font-size:14px; font-weight:500; }
+.save:hover{ background:#333; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="{% url 'employee_list' %}" class="back">← Back to Employee List</a>
+  <h1 class="page-title">Add Employee</h1>
+  <p class="subtitle">Enter the details and credentials for the new employee.</p>
+  <form method="post">
+  {% csrf_token %}
+  <div id="employee-forms">
+    <div class="card employee-card">
+      <div class="section-title">🔐 Login Credentials & Role</div>
+      <div class="form-grid">
+        <div>
+          <label>Username</label>
+          <input type="text" name="username" placeholder="e.g. manager" required>
+          <p class="hint">Employee will use this to log in.</p>
+        </div>
+        <div>
+          <label>Password</label>
+          <input type="password" name="password" placeholder="Set a password" required>
+          <p class="hint">Must be set for login access.</p>
+        </div>
+        <div class="full">
+          <label>Role (determines page access)</label>
+          <select name="role" required>
+            <option value="" disabled selected>-- Select Role --</option>
+            <option value="Admin">Sales Manager — Full Access (All Sections)</option>
+            <option value="Purchasing">Purchasing Staff — Products, Suppliers, Purchase Orders</option>
+            <option value="Inventory">Inventory Clerk — Inventory, Purchase Orders, Shipping</option>
+            <option value="Sales">Sales / Cashier — Products, Sales Orders, Customers</option>
+            <option value="Accounting">Accounting — Accounting section only</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">👤 Employee Information</div>
+      <div class="form-grid">
+        <div class="full"><label>Full Name</label><input type="text" name="full_name" placeholder="e.g. Juan Dela Cruz" required></div>
+        <div><label>Email</label><input type="email" name="email" placeholder="e.g. juan@email.com"></div>
+        <div><label>Phone</label><input type="text" name="phone" placeholder="e.g. 0917-123-4567"></div>
+        <div class="full"><label>Address</label><input type="text" name="address" placeholder="e.g. 123 Main St, Manila" required></div>
+        <div><label>Salary</label><input type="number" step="0.01" name="salary" placeholder="0.00" required></div>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <a href="{% url 'employee_list' %}" class="cancel">Cancel</a>
+    <button type="submit" class="save">💾 Save Employee</button>
+  </div>
+  </form>
+</div>
+</body>
+</html>
